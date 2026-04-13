@@ -1,0 +1,269 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "opiRunner Pipeline Configuration",
+  "description": "Schema for opiRunner pipeline configuration files",
+  "type": "object",
+  "required": ["steps"],
+  "properties": {
+    "defaultShell": {
+      "type": "string",
+      "enum": ["powershell", "cmd", "sh"],
+      "description": "Default shell for executing commands"
+    },
+    "defaultTimeout": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Default timeout in seconds (0 = no timeout)"
+    },
+    "defaultExitCode": {
+      "oneOf": [
+        {"type": "integer"},
+        {
+          "type": "array",
+          "items": {"type": "integer"}
+        }
+      ],
+      "description": "Expected exit code(s) for steps"
+    },
+    "stopOnFailure": {
+      "type": "boolean",
+      "description": "Stop pipeline execution on first failure"
+    },
+    "variables": {
+      "type": "object",
+      "additionalProperties": {"type": "string"},
+      "description": "Variables for template expansion"
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/step"
+      }
+    }
+  },
+  "definitions": {
+    "step": {
+      "type": "object",
+      "required": ["name", "run"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Step name"
+        },
+        "run": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Command or script to execute"
+        },
+        "shell": {
+          "type": "string",
+          "enum": ["powershell", "cmd", "sh"],
+          "description": "Override shell for this step"
+        },
+        "cwd": {
+          "type": "string",
+          "description": "Working directory (absolute or relative to config file)"
+        },
+        "env": {
+          "type": "object",
+          "additionalProperties": {"type": "string"},
+          "description": "Environment variables for this step"
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Timeout in seconds (0 = no timeout)"
+        },
+        "expect": {
+          "$ref": "#/definitions/expect"
+        }
+      }
+    },
+    "expect": {
+      "type": "object",
+      "properties": {
+        "exitCode": {
+          "oneOf": [
+            {"type": "integer"},
+            {
+              "type": "array",
+              "items": {"type": "integer"}
+            }
+          ],
+          "description": "Expected exit code(s)"
+        },
+        "caseSensitive": {
+          "type": "boolean",
+          "description": "Case sensitivity for string matching"
+        },
+        "stdoutMustContain": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Strings that must appear in stdout"
+        },
+        "stderrMustContain": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Strings that must appear in stderr"
+        },
+        "stdoutMustNotContain": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Strings that must NOT appear in stdout"
+        },
+        "stderrMustNotContain": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Strings that must NOT appear in stderr"
+        },
+        "stdoutMatches": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Regex patterns that must match stdout"
+        },
+        "stderrMatches": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Regex patterns that must match stderr"
+        },
+        "filesExist": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Files that must exist after execution"
+        },
+        "filesNotExist": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Files that must NOT exist after execution"
+        },
+        "preCheck": {
+          "oneOf": [
+            {"type": "string"},
+            {"$ref": "#/definitions/preCheck"}
+          ],
+          "description": "Pre-execution check"
+        },
+        "postCheck": {
+          "oneOf": [
+            {"type": "string"},
+            {"$ref": "#/definitions/postCheck"}
+          ],
+          "description": "Post-execution check"
+        }
+      }
+    },
+    "preCheck": {
+      "type": "object",
+      "oneOf": [
+        {
+          "properties": {
+            "fileExists": {"type": "string"}
+          },
+          "required": ["fileExists"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "mongodb_files",
+                "mongodb_emisti",
+                "mongodb_emisti_speciale",
+                "mongodb_anasti",
+                "mongodb_22000x"
+              ]
+            },
+            "rata": {"type": "string"},
+            "remoteHome": {"type": "string"},
+            "mongoHost": {"type": "string"},
+            "mongoPort": {
+              "oneOf": [
+                {"type": "integer"},
+                {"type": "string"}
+              ]
+            },
+            "mongoDb": {"type": "string"},
+            "mongoUser": {"type": "string"},
+            "mongoPass": {"type": "string"},
+            "mongoUri": {"type": "string"},
+            "pollIntervalSec": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Polling interval in seconds"
+            },
+            "maxWaitMin": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Maximum wait time in minutes"
+            }
+          },
+          "required": ["type", "rata"],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "postCheck": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "mongodb_polling",
+            "mongodb_polling_nonzero",
+            "mongodb_emisti_quality",
+            "mongodb_anasti_quality",
+            "mongodb_22000x_quality"
+          ]
+        },
+        "rata": {"type": "string"},
+        "mongoHost": {"type": "string"},
+        "mongoPort": {
+          "oneOf": [
+            {"type": "integer"},
+            {"type": "string"}
+          ]
+        },
+        "mongoDb": {"type": "string"},
+        "mongoUser": {"type": "string"},
+        "mongoPass": {"type": "string"},
+        "pollIntervalSec": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Polling interval in seconds"
+        },
+        "stabilityTimeoutMin": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Minutes before declaring stable (failure)"
+        },
+        "maxWaitMin": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum wait time in minutes"
+        },
+        "mongoUri": {
+          "type": "string",
+          "description": "MongoDB connection URI"
+        },
+        "remoteHome": {
+          "type": "string",
+          "description": "Remote home directory path"
+        },
+        "tipoFlusso": {
+          "type": "string",
+          "description": "Tipo di flusso (ORDINARIA, SPECIALE, RITENUTE)"
+        },
+        "progressivoSpeciale": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Progressivo SPECIALE (1, 2, 3, etc.)"
+        }
+      },
+      "required": ["type", "rata", "mongoHost", "mongoDb"],
+      "additionalProperties": false
+    }
+  }
+}

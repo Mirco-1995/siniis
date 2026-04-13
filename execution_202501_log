@@ -1,0 +1,225 @@
+Configuration validated against schema: pipeline_schema.json
+python3_launcher.sh found in PATH
+MongoDB logger configured
+Metrics collector initialized
+Progress tracker initialized
+=== opiRunner v1.3.0 | run 20251215-181545 ===
+Config: /home6/pemco/opi/opirunner/pipeline202501.json
+FailFast: False | DefaultShell: sh
+Log: runlogs/run-20251215-181545.log
+Progressive report initialized: runlogs/report_rata202501_20251215-181545.txt
+
+================================================================================
+STEP [1/16]: ORDINARIA-202501 - Transfer FILE_UTILITY
+Start Time: 2025-12-15 18:15:45
+Shell: sh | CWD: /home6/pemco | Timeout: 7200s
+Command: python3_launcher.sh opi-storage-transfer -r 202501 -t ORDINARIA -s SPT -f FILE_UTILITY
+================================================================================
+================================================================================
+PRECHECK: MongoDB file verification
+  Type: mongodb_files
+  Rata: 202501
+  Remote Home: /home6/pemco/202501/ordinaria
+================================================================================
+================================================================================
+✓ PRECHECK PASSED
+  File capitoli.txt: 1046 lines
+File dptall: 487 lines
+File comuni: 10716 lines
+Total lines across all files: 12249
+================================================================================
+Executing command...
+[Log] python3_launcher.sh START 2025/12/15 18:15:45 [opi-storage-transfer -r 202
+[Log] 501 -t ORDINARIA -s SPT -f FILE_UTILITY]
+[Log] La shell e' stata eseguita impostando il database TWO_TASK = sptco.tesoro.
+[Log] it.
+[Log] Lancio opi-storage-transfer con parametri '-r 202501 -t ORDINARIA -s SPT -
+[Log] f FILE_UTILITY'
+[Log] Caricato correttamente il file .env del progetto (/home6/pemco/py3/dotenvs
+[Log] /opi-storage-transfer.env)
+2025-12-15 18:15:46.298 | INFO     | noipa_utilities.logger.loguru:configure_logging:121 - Scrittura log su /home6/pemco/sh/log/opi-storage-transfer_20251215-181546_692497.log
+2025-12-15 18:15:46.409 | SUCCESS  | opi_storage_transfer.opi_client:call_endpoint:152 - Got status 200: 'Acquisizione metadati effettuata con successo'
+2025-12-15 18:15:46.409 | INFO     | opi_storage_transfer.engine:_process_whole_file:304 - Processing whole file /home6/pemco/202501/ordinaria/elaborazioni/files/dptall
+2025-12-15 18:15:46.582 | SUCCESS  | opi_storage_transfer.storage:push_object:52 - Created object 202501/shared/dptall; etag: f885ff5da9ee8e33c7282d16313ab5d3
+2025-12-15 18:15:46.709 | SUCCESS  | opi_storage_transfer.opi_client:call_endpoint:152 - Got status 200: 'Verifica effettuata con successo'
+2025-12-15 18:15:46.710 | INFO     | opi_storage_transfer.engine:_process_whole_file:304 - Processing whole file /home6/pemco/202501/ordinaria/elaborazioni/files/comuni
+2025-12-15 18:15:47.419 | SUCCESS  | opi_storage_transfer.storage:push_object:52 - Created object 202501/shared/comuni; etag: 3bae34c0ed729aa8fbc314c2e55b8948
+2025-12-15 18:15:47.480 | SUCCESS  | opi_storage_transfer.opi_client:call_endpoint:152 - Got status 200: 'Verifica effettuata con successo'
+2025-12-15 18:15:47.480 | INFO     | opi_storage_transfer.engine:_process_whole_file:304 - Processing whole file /home6/pemco/202501/ordinaria/elaborazioni/files/capitoli.txt
+2025-12-15 18:15:47.676 | SUCCESS  | opi_storage_transfer.storage:push_object:52 - Created object 202501/shared/capitoli.txt; etag: 21f2746b5a1a64052ec7cdd2b643b790
+2025-12-15 18:15:47.744 | SUCCESS  | opi_storage_transfer.opi_client:call_endpoint:152 - Got status 200: 'Verifica effettuata con successo'
+2025-12-15 18:15:47.745 | INFO     | opi_storage_transfer.engine:print_timers:424 - Execution cumulative stopwatches: ['IO: 0:00:00', 'STORAGE: 0:00:00', 'MS: 0:00:00', 'SPLIT: 0:00:00']
+[Log] python3_launcher.sh STOP  2025/12/15 18:15:47 (durata 2s)
+Command completed in 2.26s
+Exit Code: 0
+================================================================================
+POSTCHECK: MongoDB count verification (non-zero)
+  Rata: 202501
+  Expected: count > 0
+================================================================================
+Poll #1 (0s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #2 (10s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #3 (20s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #4 (30s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #5 (40s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #6 (50s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #7 (60s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #8 (70s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #9 (80s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #10 (90s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #11 (100s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #12 (110s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #13 (120s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #14 (130s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #15 (140s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #16 (150s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #17 (160s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #18 (170s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #19 (180s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #20 (190s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #21 (201s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #22 (211s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #23 (221s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #24 (231s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #25 (241s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #26 (251s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #27 (261s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #28 (271s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #29 (281s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #30 (291s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #31 (301s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+================================================================================
+❌ POSTCHECK FAILED: Count verification
+  Expected document count: > 0 (non-zero)
+MongoDB: 10.23.196.148:27017/opi-int
+Collection: anagrafiche
+Poll interval: 10s, Stability timeout: 5min, Max wait: 10min
+------------------------------------------------------------
+Poll #1 (0s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #2 (10s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #3 (20s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #4 (30s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #5 (40s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #6 (50s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #7 (60s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #8 (70s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #9 (80s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #10 (90s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #11 (100s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #12 (110s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #13 (120s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #14 (130s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #15 (140s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #16 (150s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #17 (160s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #18 (170s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #19 (180s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #20 (190s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #21 (201s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #22 (211s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #23 (221s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #24 (231s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #25 (241s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #26 (251s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #27 (261s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #28 (271s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #29 (281s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #30 (291s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #31 (301s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+
+ERROR: Document count stable at 0 for 5 minutes
+Expected: > 0, Actual: 0
+================================================================================
+--------------------------------------------------------------------------------
+STEP RESULT: FAILED
+Failure Reasons: postCheck failed: Expected document count: > 0 (non-zero)
+MongoDB: 10.23.196.148:27017/opi-int
+Collection: anagrafiche
+Poll interval: 10s, Stability timeout: 5min, Max wait: 10min
+------------------------------------------------------------
+Poll #1 (0s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #2 (10s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #3 (20s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #4 (30s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #5 (40s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #6 (50s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #7 (60s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #8 (70s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #9 (80s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #10 (90s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #11 (100s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #12 (110s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #13 (120s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #14 (130s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #15 (140s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #16 (150s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #17 (160s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #18 (170s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #19 (180s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #20 (190s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #21 (201s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #22 (211s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #23 (221s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #24 (231s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #25 (241s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #26 (251s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #27 (261s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #28 (271s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #29 (281s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #30 (291s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+Poll #31 (301s): opi-int.anagrafiche query={'rataEmissione': '202501', 'tipoSpesa': 'SPT'} count=0
+
+ERROR: Document count stable at 0 for 5 minutes
+Expected: > 0, Actual: 0
+End Time: 2025-12-15 18:20:48
+Total Duration: 303.15s
+================================================================================
+
+[2] ORDINARIA-202501 - Transfer FILE_EMISTI - BLOCCATO (dipendenza fallita)
+[3] ORDINARIA-202501 - Transfer FILE_22000X - BLOCCATO (dipendenza fallita)
+[4] SPECIALE1-202501 - Transfer FILE_UTILITY - BLOCCATO (dipendenza fallita)
+[5] SPECIALE1-202501 - Transfer FILE_EMISTI - BLOCCATO (dipendenza fallita)
+[6] SPECIALE1-202501 - Transfer FILE_22000X - BLOCCATO (dipendenza fallita)
+[7] SPECIALE2-202501 - Transfer FILE_UTILITY - BLOCCATO (dipendenza fallita)
+[8] SPECIALE2-202501 - Transfer FILE_EMISTI - BLOCCATO (dipendenza fallita)
+[9] SPECIALE2-202501 - Transfer FILE_22000X - BLOCCATO (dipendenza fallita)
+[10] SPECIALE3-202501 - Transfer FILE_UTILITY - BLOCCATO (dipendenza fallita)
+[11] SPECIALE3-202501 - Transfer FILE_EMISTI - BLOCCATO (dipendenza fallita)
+[12] SPECIALE3-202501 - Transfer FILE_22000X - BLOCCATO (dipendenza fallita)
+[13] SINIIS-202501 - Caricamento SINIIS - BLOCCATO (dipendenza fallita)
+[14] RITENUTE-202501 - Transfer FILE_UTILITY - BLOCCATO (dipendenza fallita)
+[15] RITENUTE-202501 - Transfer ANASTI - BLOCCATO (dipendenza fallita)
+[16] RITENUTE-202501 - Transfer FILE_22000X - BLOCCATO (dipendenza fallita)
+Report saved: runlogs/report_rata202501_20251215-181545.txt
+
+================================================================================
+PIPELINE EXECUTION METRICS
+================================================================================
+Pipeline: /home6/pemco/opi/opirunner/pipeline202501.json
+Start time: 2025-12-15T18:15:45.582623
+End time: 2025-12-15T18:20:48.739870
+Total duration: 5m 3.2s
+
+Steps Summary:
+  Total steps: 16
+  Completed: 16
+  Successful: 0
+  Failed: 16
+  Skipped: 0
+  Timed out: 0
+  Success rate: 0.0%
+
+Top 5 Slowest Steps:
+  1. [FAIL] Step 1: ORDINARIA-202501 - Transfer FILE_UTILITY - 5m 3.2s
+  2. [FAIL] Step 2: ORDINARIA-202501 - Transfer FILE_EMISTI - 0.0s
+  3. [FAIL] Step 12: SPECIALE3-202501 - Transfer FILE_22000X - 0.0s
+  4. [FAIL] Step 9: SPECIALE2-202501 - Transfer FILE_22000X - 0.0s
+  5. [FAIL] Step 3: ORDINARIA-202501 - Transfer FILE_22000X - 0.0s
+
+================================================================================
+
+=== Summary ===
+Total: 16 | Passed: 0 | Failed: 16
+MongoDB connection pool closed
+Cleaning up resources...
+MongoDB connections closed

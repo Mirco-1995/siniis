@@ -1,0 +1,644 @@
+{
+  "defaultShell": "sh",
+  "defaultTimeout": 5400,
+  "defaultExitCode": 0,
+  "stopOnFailure": false,
+  "variables": {
+    "RATA": "202512",
+    "REMOTE_HOME_ORDINARIA": "/home6/pemco/${RATA}/ordinaria",
+    "REMOTE_HOME_SPECIALE1": "/home6/pemco/${RATA}/speciale1",
+    "REMOTE_HOME_SPECIALE2": "/home6/pemco/${RATA}/speciale2",
+    "REMOTE_HOME_SPECIALE3": "/home6/pemco/${RATA}/speciale3",
+    "REMOTE_HOME_SPECIALE4": "/home6/pemco/${RATA}/speciale4",
+    "REMOTE_HOME_RITENUTE": "/home6/pemco/${RATA}/ritenute",
+    "SINIIS_CWD": "/home6/pemco/opi/gestione_siniis",
+    "SINIIS_PYTHON": "/home6/pemco/opi/.transf_venv/bin/python",
+    "SINIIS_REMOTE_DIR_FILES": "/home6/pemco/202512/ritenute/elaborazioni/files/mese",
+    "SINIIS_FILE_PATH": "/home6/pemco/202512/ritenute/elaborazioni/files/mese/siniis.txt"
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "name": "ORDINARIA-202512 - Transfer FILE_UTILITY",
+      "run": "python3_launcher_new.sh opi-storage-transfer -r 202512 -t ORDINARIA -s SPT -f FILE_UTILITY",
+      "env": {
+        "REMOTE_HOME": "/home6/pemco/202512/ordinaria",
+        "REMOTE_ROOT": "/"
+      },
+      "expect": {
+        "exitCode": 0,
+        "preCheck": {
+          "type": "mongodb_files",
+          "rata": "202512",
+          "remoteHome": "/home6/pemco/202512/ordinaria"
+        },
+        "postCheck": {
+          "type": "mongodb_polling_nonzero",
+          "rata": "202512",
+          "mongoHost": "${MONGO_HOST}",
+          "mongoPort": "${MONGO_PORT}",
+          "mongoDb": "${MONGO_DB}",
+          "mongoUser": "${MONGO_USER}",
+          "mongoPass": "${MONGO_PASS}",
+          "mongoUri": "${MONGODB_URI}",
+          "pollIntervalSec": 10,
+          "stabilityTimeoutMin": 10,
+          "maxWaitMin": 10
+        }
+      },
+      "cwd": "/home6/pemco"
+    },
+    {
+      "stepNumber": 2,
+      "name": "ORDINARIA-202512 - Transfer FILE_EMISTI",
+      "run": "python3_launcher_new.sh opi-storage-transfer -r 202512 -t ORDINARIA -s SPT -f FILE_EMISTI",
+      "env": {
+        "REMOTE_HOME": "/home6/pemco/202512/ordinaria",
+        "REMOTE_ROOT": "/"
+      },
+      "expect": {
+        "exitCode": 0,
+        "preCheck": {
+          "type": "mongodb_emisti",
+          "rata": "202512",
+          "remoteHome": "/home6/pemco/202512/ordinaria"
+        },
+        "postCheck": {
+          "type": "mongodb_emisti_quality",
+          "rata": "202512",
+          "tipoFlusso": "ORDINARIA",
+          "mongoHost": "${MONGO_HOST}",
+          "mongoPort": "${MONGO_PORT}",
+          "mongoDb": "${MONGO_DB}",
+          "mongoUser": "${MONGO_USER}",
+          "mongoPass": "${MONGO_PASS}",
+          "mongoUri": "${MONGODB_URI}",
+          "pollIntervalSec": 30,
+          "stabilityTimeoutMin": 30,
+          "maxWaitMin": 120
+        }
+      },
+      "cwd": "/home6/pemco"
+    },
+    {
+      "stepNumber": 3,
+      "name": "ORDINARIA-202512 - Transfer FILE_22000X",
+      "run": "python3_launcher_new.sh opi-storage-transfer -r 202512 -t ORDINARIA -s SPT -f FILE_22000X",
+      "env": {
+        "REMOTE_HOME": "/home6/pemco/202512/ordinaria",
+        "REMOTE_ROOT": "/"
+      },
+      "expect": {
+        "exitCode": 0,
+        "preCheck": {
+          "type": "mongodb_22000x",
+          "rata": "202512",
+          "remoteHome": "/home6/pemco/202512/ordinaria"
+        },
+        "postCheck": {
+          "type": "mongodb_22000x_quality",
+          "rata": "202512",
+          "remoteHome": "/home6/pemco/202512/ordinaria",
+          "tipoFlusso": "ORDINARIA",
+          "mongoHost": "${MONGO_HOST}",
+          "mongoPort": "${MONGO_PORT}",
+          "mongoDb": "${MONGO_DB}",
+          "mongoUser": "${MONGO_USER}",
+          "mongoPass": "${MONGO_PASS}",
+          "mongoUri": "${MONGODB_URI}",
+          "pollIntervalSec": 30,
+          "stabilityTimeoutMin": 30,
+          "maxWaitMin": 120
+        }
+      },
+      "cwd": "/home6/pemco"
+    },
+    {
+      "stepNumber": 4,
+      "name": "SPECIALE1-202512 - Transfer FILE_UTILITY",
+      "run": "python3_launcher_new.sh opi-storage-transfer -r 202512 -t SPECIALE -s SPT -f FILE_UTILITY",
+      "env": {
+        "REMOTE_HOME": "/home6/pemco/202512/speciale1",
+        "REMOTE_ROOT": "/"
+      },
+      "expect": {
+        "exitCode": 0,
+        "preCheck": {
+          "type": "mongodb_files",
+          "rata": "202512",
+          "remoteHome": "/home6/pemco/202512/speciale1"
+        },
+        "postCheck": {
+          "type": "mongodb_polling_nonzero",
+          "rata": "202512",
+          "mongoHost": "${MONGO_HOST}",
+          "mongoPort": "${MONGO_PORT}",
+          "mongoDb": "${MONGO_DB}",
+          "mongoUser": "${MONGO_USER}",
+          "mongoPass": "${MONGO_PASS}",
+          "mongoUri": "${MONGODB_URI}",
+          "pollIntervalSec": 10,
+          "stabilityTimeoutMin": 10,
+          "maxWaitMin": 10
+        }
+      },
+      "cwd": "/home6/pemco"
+    },
+    {
+      "stepNumber": 5,
+      "name": "SPECIALE1-202512 - Transfer FILE_EMISTI",
+      "run": "python3_launcher_new.sh opi-storage-transfer -r 202512 -t SPECIALE -s SPT -f FILE_EMISTI",
+      "env": {
+        "REMOTE_HOME": "/home6/pemco/202512/speciale1",
+        "REMOTE_ROOT": "/"
+      },
+      "expect": {
+        "exitCode": 0,
+        "preCheck": {
+          "type": "mongodb_emisti_speciale",
+          "rata": "202512",
+          "remoteHome": "/home6/pemco/202512/speciale1"
+        },
+        "postCheck": {
+          "type": "mongodb_emisti_quality",
+          "rata": "202512",
+          "tipoFlusso": "SPECIALE",
+          "progressivoSpeciale": 1,
+          "mongoHost": "${MONGO_HOST}",
+          "mongoPort": "${MONGO_PORT}",
+          "mongoDb": "${MONGO_DB}",
+          "mongoUser": "${MONGO_USER}",
+          "mongoPass": "${MONGO_PASS}",
+          "mongoUri": "${MONGODB_URI}",
+          "pollIntervalSec": 30,
+          "stabilityTimeoutMin": 30,
+          "maxWaitMin": 120
+        }
+      },
+      "cwd": "/home6/pemco"
+    },
+    {
+      "stepNumber": 6,
+      "name": "SPECIALE1-202512 - Transfer FILE_22000X",
+      "run": "python3_launcher_new.sh opi-storage-transfer -r 202512 -t SPECIALE -s SPT -f FILE_22000X",
+      "env": {
+        "REMOTE_HOME": "/home6/pemco/202512/speciale1",
+        "REMOTE_ROOT": "/"
+      },
+      "expect": {
+        "exitCode": 0,
+        "preCheck": {
+          "type": "mongodb_22000x",
+          "rata": "202512",
+          "remoteHome": "/home6/pemco/202512/speciale1"
+        },
+        "postCheck": {
+          "type": "mongodb_22000x_quality",
+          "rata": "202512",
+          "remoteHome": "/home6/pemco/202512/speciale1",
+          "tipoFlusso": "SPECIALE",
+          "progressivoSpeciale": 1,
+          "mongoHost": "${MONGO_HOST}",
+          "mongoPort": "${MONGO_PORT}",
+          "mongoDb": "${MONGO_DB}",
+          "mongoUser": "${MONGO_USER}",
+          "mongoPass": "${MONGO_PASS}",
+          "mongoUri": "${MONGODB_URI}",
+          "pollIntervalSec": 30,
+          "stabilityTimeoutMin": 30,
+          "maxWaitMin": 120
+        }
+      },
+      "cwd": "/home6/pemco"
+    },
+    {
+      "stepNumber": 7,
+      "name": "SPECIALE2-202512 - Transfer FILE_UTILITY",
+      "run": "python3_launcher_new.sh opi-storage-transfer -r 202512 -t SPECIALE -s SPT -f FILE_UTILITY",
+      "env": {
+        "REMOTE_HOME": "/home6/pemco/202512/speciale2",
+        "REMOTE_ROOT": "/"
+      },
+      "expect": {
+        "exitCode": 0,
+        "preCheck": {
+          "type": "mongodb_files",
+          "rata": "202512",
+          "remoteHome": "/home6/pemco/202512/speciale2"
+        },
+        "postCheck": {
+          "type": "mongodb_polling_nonzero",
+          "rata": "202512",
+          "mongoHost": "${MONGO_HOST}",
+          "mongoPort": "${MONGO_PORT}",
+          "mongoDb": "${MONGO_DB}",
+          "mongoUser": "${MONGO_USER}",
+          "mongoPass": "${MONGO_PASS}",
+          "mongoUri": "${MONGODB_URI}",
+          "pollIntervalSec": 10,
+          "stabilityTimeoutMin": 10,
+          "maxWaitMin": 10
+        }
+      },
+      "cwd": "/home6/pemco"
+    },
+    {
+      "stepNumber": 8,
+      "name": "SPECIALE2-202512 - Transfer FILE_EMISTI",
+      "run": "python3_launcher_new.sh opi-storage-transfer -r 202512 -t SPECIALE -s SPT -f FILE_EMISTI",
+      "env": {
+        "REMOTE_HOME": "/home6/pemco/202512/speciale2",
+        "REMOTE_ROOT": "/"
+      },
+      "expect": {
+        "exitCode": 0,
+        "preCheck": {
+          "type": "mongodb_emisti_speciale",
+          "rata": "202512",
+          "remoteHome": "/home6/pemco/202512/speciale2"
+        },
+        "postCheck": {
+          "type": "mongodb_emisti_quality",
+          "rata": "202512",
+          "tipoFlusso": "SPECIALE",
+          "progressivoSpeciale": 2,
+          "mongoHost": "${MONGO_HOST}",
+          "mongoPort": "${MONGO_PORT}",
+          "mongoDb": "${MONGO_DB}",
+          "mongoUser": "${MONGO_USER}",
+          "mongoPass": "${MONGO_PASS}",
+          "mongoUri": "${MONGODB_URI}",
+          "pollIntervalSec": 30,
+          "stabilityTimeoutMin": 30,
+          "maxWaitMin": 120
+        }
+      },
+      "cwd": "/home6/pemco"
+    },
+    {
+      "stepNumber": 9,
+      "name": "SPECIALE2-202512 - Transfer FILE_22000X",
+      "run": "python3_launcher_new.sh opi-storage-transfer -r 202512 -t SPECIALE -s SPT -f FILE_22000X",
+      "env": {
+        "REMOTE_HOME": "/home6/pemco/202512/speciale2",
+        "REMOTE_ROOT": "/"
+      },
+      "expect": {
+        "exitCode": 0,
+        "preCheck": {
+          "type": "mongodb_22000x",
+          "rata": "202512",
+          "remoteHome": "/home6/pemco/202512/speciale2"
+        },
+        "postCheck": {
+          "type": "mongodb_22000x_quality",
+          "rata": "202512",
+          "remoteHome": "/home6/pemco/202512/speciale2",
+          "tipoFlusso": "SPECIALE",
+          "progressivoSpeciale": 2,
+          "mongoHost": "${MONGO_HOST}",
+          "mongoPort": "${MONGO_PORT}",
+          "mongoDb": "${MONGO_DB}",
+          "mongoUser": "${MONGO_USER}",
+          "mongoPass": "${MONGO_PASS}",
+          "mongoUri": "${MONGODB_URI}",
+          "pollIntervalSec": 30,
+          "stabilityTimeoutMin": 30,
+          "maxWaitMin": 120
+        }
+      },
+      "cwd": "/home6/pemco"
+    },
+    {
+      "stepNumber": 10,
+      "name": "SPECIALE3-202512 - Transfer FILE_UTILITY",
+      "run": "python3_launcher_new.sh opi-storage-transfer -r 202512 -t SPECIALE -s SPT -f FILE_UTILITY",
+      "env": {
+        "REMOTE_HOME": "/home6/pemco/202512/speciale3",
+        "REMOTE_ROOT": "/"
+      },
+      "expect": {
+        "exitCode": 0,
+        "preCheck": {
+          "type": "mongodb_files",
+          "rata": "202512",
+          "remoteHome": "/home6/pemco/202512/speciale3"
+        },
+        "postCheck": {
+          "type": "mongodb_polling_nonzero",
+          "rata": "202512",
+          "mongoHost": "${MONGO_HOST}",
+          "mongoPort": "${MONGO_PORT}",
+          "mongoDb": "${MONGO_DB}",
+          "mongoUser": "${MONGO_USER}",
+          "mongoPass": "${MONGO_PASS}",
+          "mongoUri": "${MONGODB_URI}",
+          "pollIntervalSec": 10,
+          "stabilityTimeoutMin": 10,
+          "maxWaitMin": 10
+        }
+      },
+      "cwd": "/home6/pemco"
+    },
+    {
+      "stepNumber": 11,
+      "name": "SPECIALE3-202512 - Transfer FILE_EMISTI",
+      "run": "python3_launcher_new.sh opi-storage-transfer -r 202512 -t SPECIALE -s SPT -f FILE_EMISTI",
+      "env": {
+        "REMOTE_HOME": "/home6/pemco/202512/speciale3",
+        "REMOTE_ROOT": "/"
+      },
+      "expect": {
+        "exitCode": 0,
+        "preCheck": {
+          "type": "mongodb_emisti_speciale",
+          "rata": "202512",
+          "remoteHome": "/home6/pemco/202512/speciale3"
+        },
+        "postCheck": {
+          "type": "mongodb_emisti_quality",
+          "rata": "202512",
+          "tipoFlusso": "SPECIALE",
+          "progressivoSpeciale": 3,
+          "mongoHost": "${MONGO_HOST}",
+          "mongoPort": "${MONGO_PORT}",
+          "mongoDb": "${MONGO_DB}",
+          "mongoUser": "${MONGO_USER}",
+          "mongoPass": "${MONGO_PASS}",
+          "mongoUri": "${MONGODB_URI}",
+          "pollIntervalSec": 30,
+          "stabilityTimeoutMin": 30,
+          "maxWaitMin": 120
+        }
+      },
+      "cwd": "/home6/pemco"
+    },
+    {
+      "stepNumber": 12,
+      "name": "SPECIALE3-202512 - Transfer FILE_22000X",
+      "run": "python3_launcher_new.sh opi-storage-transfer -r 202512 -t SPECIALE -s SPT -f FILE_22000X",
+      "env": {
+        "REMOTE_HOME": "/home6/pemco/202512/speciale3",
+        "REMOTE_ROOT": "/"
+      },
+      "expect": {
+        "exitCode": 0,
+        "preCheck": {
+          "type": "mongodb_22000x",
+          "rata": "202512",
+          "remoteHome": "/home6/pemco/202512/speciale3"
+        },
+        "postCheck": {
+          "type": "mongodb_22000x_quality",
+          "rata": "202512",
+          "remoteHome": "/home6/pemco/202512/speciale3",
+          "tipoFlusso": "SPECIALE",
+          "progressivoSpeciale": 3,
+          "mongoHost": "${MONGO_HOST}",
+          "mongoPort": "${MONGO_PORT}",
+          "mongoDb": "${MONGO_DB}",
+          "mongoUser": "${MONGO_USER}",
+          "mongoPass": "${MONGO_PASS}",
+          "mongoUri": "${MONGODB_URI}",
+          "pollIntervalSec": 30,
+          "stabilityTimeoutMin": 30,
+          "maxWaitMin": 120
+        }
+      },
+      "cwd": "/home6/pemco"
+    },
+
+
+
+
+
+    {
+      "stepNumber": 13,
+      "name": "SPECIALE4-202512 - Transfer FILE_UTILITY",
+      "run": "python3_launcher_new.sh opi-storage-transfer -r 202512 -t SPECIALE -s SPT -f FILE_UTILITY",
+      "env": {
+        "REMOTE_HOME": "/home6/pemco/202512/speciale4",
+        "REMOTE_ROOT": "/"
+      },
+      "expect": {
+        "exitCode": 0,
+        "preCheck": {
+          "type": "mongodb_files",
+          "rata": "202512",
+          "remoteHome": "/home6/pemco/202512/speciale4"
+        },
+        "postCheck": {
+          "type": "mongodb_polling_nonzero",
+          "rata": "202512",
+          "mongoHost": "${MONGO_HOST}",
+          "mongoPort": "${MONGO_PORT}",
+          "mongoDb": "${MONGO_DB}",
+          "mongoUser": "${MONGO_USER}",
+          "mongoPass": "${MONGO_PASS}",
+          "mongoUri": "${MONGODB_URI}",
+          "pollIntervalSec": 10,
+          "stabilityTimeoutMin": 10,
+          "maxWaitMin": 10
+        }
+      },
+      "cwd": "/home6/pemco"
+    },
+    {
+      "stepNumber": 14,
+      "name": "SPECIALE4-202512 - Transfer FILE_EMISTI",
+      "run": "python3_launcher_new.sh opi-storage-transfer -r 202512 -t SPECIALE -s SPT -f FILE_EMISTI",
+      "env": {
+        "REMOTE_HOME": "/home6/pemco/202512/speciale4",
+        "REMOTE_ROOT": "/"
+      },
+      "expect": {
+        "exitCode": 0,
+        "preCheck": {
+          "type": "mongodb_emisti_speciale",
+          "rata": "202512",
+          "remoteHome": "/home6/pemco/202512/speciale4"
+        },
+        "postCheck": {
+          "type": "mongodb_emisti_quality",
+          "rata": "202512",
+          "tipoFlusso": "SPECIALE",
+          "progressivoSpeciale": 3,
+          "mongoHost": "${MONGO_HOST}",
+          "mongoPort": "${MONGO_PORT}",
+          "mongoDb": "${MONGO_DB}",
+          "mongoUser": "${MONGO_USER}",
+          "mongoPass": "${MONGO_PASS}",
+          "mongoUri": "${MONGODB_URI}",
+          "pollIntervalSec": 30,
+          "stabilityTimeoutMin": 30,
+          "maxWaitMin": 120
+        }
+      },
+      "cwd": "/home6/pemco"
+    },
+    {
+      "stepNumber": 15,
+      "name": "SPECIALE4-202512 - Transfer FILE_22000X",
+      "run": "python3_launcher_new.sh opi-storage-transfer -r 202512 -t SPECIALE -s SPT -f FILE_22000X",
+      "env": {
+        "REMOTE_HOME": "/home6/pemco/202512/speciale4",
+        "REMOTE_ROOT": "/"
+      },
+      "expect": {
+        "exitCode": 0,
+        "preCheck": {
+          "type": "mongodb_22000x",
+          "rata": "202512",
+          "remoteHome": "/home6/pemco/202512/speciale4"
+        },
+        "postCheck": {
+          "type": "mongodb_22000x_quality",
+          "rata": "202512",
+          "remoteHome": "/home6/pemco/202512/speciale4",
+          "tipoFlusso": "SPECIALE",
+          "progressivoSpeciale": 3,
+          "mongoHost": "${MONGO_HOST}",
+          "mongoPort": "${MONGO_PORT}",
+          "mongoDb": "${MONGO_DB}",
+          "mongoUser": "${MONGO_USER}",
+          "mongoPass": "${MONGO_PASS}",
+          "mongoUri": "${MONGODB_URI}",
+          "pollIntervalSec": 30,
+          "stabilityTimeoutMin": 30,
+          "maxWaitMin": 120
+        }
+      },
+      "cwd": "/home6/pemco"
+    },
+ 
+
+
+
+    {
+      "stepNumber": 16,
+      "name": "SINIIS-202512 - Caricamento SINIIS",
+      "run": "${SINIIS_PYTHON}  cli.py -r 202512 -t RITENUTE -s SPT -v",
+      "env": {
+        "REMOTE_HOME": "/home6/pemco/202512/ritenute",
+        "REMOTE_ROOT": "/",
+        "REMOTE_DIR_FILES": "/home6/pemco/202512/ritenute/elaborazioni/files/mese",
+        "ORACLE_DSN": "c1v-orc-snpc10.coll.tesoro.it:1521/SPTES.TESORO.IT",
+        "ORACLE_OWNER": "SPTOWNER",
+        "ORACLE_PASSWORD": "svilsnpc10$",
+        "ORACLE_USER": "sptowner",
+        "MONGODB_URI":"mongodb://opiuser:opi-password123@c1o-npa-mdbc00.mongo.internal:27017,c1o-npa-mdbc01.mongo.internal:27017,c1o-npa-mdbc02.mongo.internal:27017/opi-coll?replicaSet=rs0&socketTimeoutMS=600000&maxIdleTimeMS=300000",
+        "MONGODB_DB":"opi-coll"
+      },
+      "expect": {
+        "exitCode": 0,
+        "preCheck": {
+          "fileExists": "${SINIIS_FILE_PATH}"
+        }
+      },
+      "cwd": "${SINIIS_CWD}"
+    },
+    {
+      "stepNumber": 17,
+      "name": "RITENUTE-202512 - Transfer FILE_UTILITY",
+      "run": "python3_launcher_new.sh opi-storage-transfer -r 202512 -t RITENUTE -s SPT -f FILE_UTILITY",
+      "env": {
+        "REMOTE_HOME": "/home6/pemco/202512/ritenute",
+        "REMOTE_ROOT": "/"
+      },
+      "expect": {
+        "exitCode": 0,
+        "preCheck": {
+          "type": "mongodb_files",
+          "rata": "202512",
+          "remoteHome": "/home6/pemco/202512/ritenute"
+        },
+        "postCheck": {
+          "type": "mongodb_polling_nonzero",
+          "rata": "202512",
+          "mongoHost": "${MONGO_HOST}",
+          "mongoPort": "${MONGO_PORT}",
+          "mongoDb": "${MONGO_DB}",
+          "mongoUser": "${MONGO_USER}",
+          "mongoPass": "${MONGO_PASS}",
+          "mongoUri": "${MONGODB_URI}",
+          "pollIntervalSec": 10,
+          "stabilityTimeoutMin": 10,
+          "maxWaitMin": 10
+        }
+      },
+      "cwd": "/home6/pemco"
+    },
+    {
+      "stepNumber": 18,
+      "name": "RITENUTE-202512 - Transfer ANASTI",
+      "run": "python3_launcher_new.sh opi-storage-transfer -r 202512 -t RITENUTE -s SPT -f FILE_ANASTI",
+      "env": {
+        "REMOTE_HOME": "/home6/pemco/202512/ritenute",
+        "REMOTE_ROOT": "/"
+      },
+      "expect": {
+        "exitCode": 0,
+        "preCheck": {
+          "type": "mongodb_anasti",
+          "rata": "202512",
+          "remoteHome": "/home6/pemco/202512/ritenute",
+          "mongoHost": "${MONGO_HOST}",
+          "mongoPort": "${MONGO_PORT}",
+          "mongoDb": "${MONGO_DB}",
+          "mongoUser": "${MONGO_USER}",
+          "mongoPass": "${MONGO_PASS}",
+          "mongoUri": "${MONGODB_URI}",
+          "pollIntervalSec": 10,
+          "maxWaitMin": 60
+        },
+        "postCheck": {
+          "type": "mongodb_anasti_quality",
+          "rata": "202512",
+          "mongoHost": "${MONGO_HOST}",
+          "mongoPort": "${MONGO_PORT}",
+          "mongoDb": "${MONGO_DB}",
+          "mongoUser": "${MONGO_USER}",
+          "mongoPass": "${MONGO_PASS}",
+          "mongoUri": "${MONGODB_URI}",
+          "pollIntervalSec": 30,
+          "stabilityTimeoutMin": 30,
+          "maxWaitMin": 120
+        }
+      },
+      "cwd": "/home6/pemco"
+    },
+    {
+      "stepNumber": 19,
+      "name": "RITENUTE-202512 - Transfer FILE_22000X",
+      "run": "python3_launcher_new.sh opi-storage-transfer -r 202512 -t RITENUTE -s SPT -f FILE_22000X",
+      "env": {
+        "REMOTE_HOME": "/home6/pemco/202512/ritenute",
+        "REMOTE_ROOT": "/"
+      },
+      "expect": {
+        "exitCode": 0,
+        "preCheck": {
+          "type": "mongodb_22000x",
+          "rata": "202512",
+          "remoteHome": "/home6/pemco/202512/ritenute"
+        },
+        "postCheck": {
+          "type": "mongodb_22000x_quality",
+          "rata": "202512",
+          "remoteHome": "/home6/pemco/202512/ritenute",
+          "tipoFlusso": "RITENUTE",
+          "mongoHost": "${MONGO_HOST}",
+          "mongoPort": "${MONGO_PORT}",
+          "mongoDb": "${MONGO_DB}",
+          "mongoUser": "${MONGO_USER}",
+          "mongoPass": "${MONGO_PASS}",
+          "mongoUri": "${MONGODB_URI}",
+          "pollIntervalSec": 30,
+          "stabilityTimeoutMin": 30,
+          "maxWaitMin": 120
+        }
+      },
+      "cwd": "/home6/pemco"
+    }
+  ]
+}
