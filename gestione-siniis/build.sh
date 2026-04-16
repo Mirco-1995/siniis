@@ -32,7 +32,7 @@ build() {
   # al profilo richiesto dalla pipeline.
   export POETRY_CACHE_DIR=".pypoetry"
   poetry build
-  poetry pack-dist --platform "$PLATFORM" --with cli
+  poetry pack-dist --platform "$PLATFORM"
   # Nessun test
 #  if [ -z "${branch}" ]; then
 #    # Eseguiamo i test solamente se non siamo su WebO (env.branch non definito)
