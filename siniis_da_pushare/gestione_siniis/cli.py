@@ -11,7 +11,7 @@ import sys
 if str(_PARENT) not in sys.path:
     sys.path.insert(0, str(_PARENT))
 
-from gestione_siniis.core import (  # noqa: E402
+from siniis_da_pushare.gestione_siniis.core import (  # noqa: E402
     FlowType,
     MongoPgResolver,
     OracleSiniisWriter,

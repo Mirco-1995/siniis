@@ -11,7 +11,7 @@ from typing import Iterable, Protocol
 
 from loguru import logger
 
-from gestione_siniis.constants import REMOTE_DIR_FILES
+from siniis_da_pushare.gestione_siniis.constants import REMOTE_DIR_FILES
 try:
     import oracledb
 except ImportError:  # pragma: no cover
