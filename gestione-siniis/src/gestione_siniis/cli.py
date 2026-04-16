@@ -1,17 +1,9 @@
 from __future__ import annotations
-
 from pathlib import Path
 import typer
 from loguru import logger
 
-# Permette l'esecuzione diretta da dentro la cartella gestione_siniis
-_PARENT = Path(__file__).resolve().parent.parent
-import sys
-
-if str(_PARENT) not in sys.path:
-    sys.path.insert(0, str(_PARENT))
-
-from siniis_da_pushare.gestione_siniis.core import (  # noqa: E402
+from gestione_siniis.core import (
     FlowType,
     MongoPgResolver,
     OracleSiniisWriter,
