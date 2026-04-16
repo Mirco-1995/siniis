@@ -163,7 +163,7 @@ def _extract_pg_and_ente(document: dict) -> tuple[int | None, str | None]:
 
 class MongoPgResolver:
     """
-    Recupera il numero di partita di giro e il codice ente interrogando MongoDB.
+    Recupera il numero di partita e il codice ente interrogando MongoDB.
     """
 
     def __init__(self,
@@ -191,25 +191,25 @@ class MongoPgResolver:
             iscrizione_val = iscrizione
         rata_str = str(self._rata_versamento)
 
-        capitolo_candidates = [capitolo]
-        try:
-            capitolo_int = int(capitolo)
-            capitolo_candidates.append(capitolo_int)
-        except ValueError:
-            pass
+        capitolo_candidates = str(capitolo)
+#        try:
+#            capitolo_int = int(capitolo)
+#            capitolo_candidates.append(capitolo_int)
+#        except ValueError:
+#            pass
 
-        codice_spesa_candidates = [codice_spesa]
-        try:
-            codice_spesa_int = int(codice_spesa)
-            codice_spesa_candidates.append(codice_spesa_int)
-        except ValueError:
-            pass
+        codice_spesa_candidates = int(codice_spesa)
+#        try:
+#            codice_spesa_int = int(codice_spesa)
+#            codice_spesa_candidates.append(codice_spesa_int)
+#        except ValueError:
+#            pass
 
         query = {
             "iscrizione": iscrizione_val,
             "rataEmissione": rata_str,
-            "capitoloDiBilancio": {"$in": capitolo_candidates},
-            "codiceSpesa": {"$in": codice_spesa_candidates},
+            "capitoloDiBilancio": capitolo_candidates,
+            "codiceSpesa": codice_spesa_candidates,
         }
         print(query)
 
