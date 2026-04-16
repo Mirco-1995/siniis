@@ -11,7 +11,7 @@ from typing import Iterable, Protocol
 
 from loguru import logger
 
-from siniis_da_pushare.gestione_siniis.constants import REMOTE_DIR_FILES
+from gestione_siniis.constants import REMOTE_DIR_FILES
 try:
     import oracledb
 except ImportError:  # pragma: no cover
@@ -440,6 +440,8 @@ def find_siniis_files(installment: int, flow_type: str, spending_type: str) -> l
     """
     Recupera i file SINIIS dalla directory indicata da REMOTE_DIR_FILES.
     """
+    if REMOTE_DIR_FILES is None:
+        raise EnvironmentError("Variabile d'ambiente non definita: REMOTE_DIR_FILES")
     folder = REMOTE_DIR_FILES
     if not folder.exists():
         raise FileNotFoundError(f"Cartella non trovata: {folder}")

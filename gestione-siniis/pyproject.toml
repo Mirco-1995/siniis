@@ -8,11 +8,15 @@ packages = [{include = "gestione_siniis", from = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-typer = "^0.12.0"
+typer = "^0.16.0"
 loguru = "*"
 pymongo = "*"
 oracledb = "*"
 
 [tool.poetry.scripts]
-siniis = "gestione_siniis.cli:main"
+siniis = "gestione_siniis.__main__:main"
 siniis-check = "gestione_siniis.check_connection:app"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

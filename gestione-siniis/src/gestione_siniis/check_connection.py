@@ -12,7 +12,7 @@ from __future__ import annotations
 import typer
 from pymongo import MongoClient
 
-from other.constants import (
+from gestione_siniis.constants import (
     MONGO_DB,
     MONGO_URI,
     ORACLE_DSN,
