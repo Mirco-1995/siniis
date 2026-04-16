@@ -12,7 +12,7 @@ from __future__ import annotations
 import typer
 from pymongo import MongoClient
 
-from constants import (
+from other.constants import (
     MONGO_DB,
     MONGO_URI,
     ORACLE_DSN,
