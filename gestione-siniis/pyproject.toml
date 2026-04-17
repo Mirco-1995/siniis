@@ -2,13 +2,13 @@
 name = "gestione-siniis"
 version = "0.1.0"
 description = "Gestione flussi SINIIS"
-authors = ["Il Tuo Nome <tua.email@esempio.it>"]
+authors = ["Mirco Mazzolena <mirco.mazzolena2@dxc.com>"]
 readme = "README.md"
 packages = [{include = "gestione_siniis", from = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-typer = "^0.16.0"
+typer = "^*"
 loguru = "*"
 pymongo = "*"
 oracledb = "*"
