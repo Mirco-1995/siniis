@@ -8,10 +8,10 @@ packages = [{include = "gestione_siniis", from = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-typer = "^*"
-loguru = "*"
-pymongo = "*"
-oracledb = "*"
+typer = "0.12.5"
+loguru = "0.7.3"
+pymongo = "^4.6.0"
+oracledb = "2.5"
 
 [tool.poetry.scripts]
 siniis = "gestione_siniis.__main__:main"
