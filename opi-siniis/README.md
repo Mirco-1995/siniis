@@ -27,7 +27,7 @@ opi-siniis
 
 ## Configurazione
 
-Copia `opi-siniis.properties.template` in `opi-siniis.properties` e configura:
+Crea `opi-siniis.properties` e configura:
 
 ```ini
 [default]

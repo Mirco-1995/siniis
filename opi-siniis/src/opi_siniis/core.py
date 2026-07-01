@@ -250,6 +250,11 @@ class OracleSiniisLoader:
             logger.info("Nessun record da caricare")
             return result
 
+        delete_sql = f"""
+            DELETE FROM {self._table_name}
+            WHERE OPI_RATA_VERSAMENTO = :rata
+        """
+
         insert_sql = f"""
             INSERT INTO {self._table_name} (
                 OPI_RATA_VERSAMENTO,
@@ -281,6 +286,8 @@ class OracleSiniisLoader:
         try:
             with self._get_connection() as conn:
                 with conn.cursor() as cur:
+                    cur.execute(delete_sql, {"rata": rata})
+                    logger.info(f"Cancellati {cur.rowcount} record esistenti per rata {rata}")
                     for rec in records:
                         try:
                             cur.execute(insert_sql, (
