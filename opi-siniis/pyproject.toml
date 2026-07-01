@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "opi-siniis"
+version = "1.0.0"
+description = "Caricamento dati SINIIS_PG nella tabella OPI_SINIIS_PG"
+authors = ["Mirco Mazzolena <mirco.mazzolena2@dxc.com>"]
+readme = "README.md"
+packages = [{include = "opi_siniis", from = "src"}]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.14"
+loguru = "^0.7"
+oracledb = "^2.5"
+typer = {extras = ["all"], version = "^0.12.3"}
+python-dotenv = "^1.0"
+
+[tool.poetry.group.test]
+optional = true
+
+[tool.poetry.group.test.dependencies]
+coverage = "*"
+
+[tool.poetry.scripts]
+opi-siniis = 'opi_siniis.__main__:main'
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
