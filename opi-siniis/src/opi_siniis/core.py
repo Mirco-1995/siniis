@@ -250,10 +250,18 @@ class OracleSiniisLoader:
             logger.info("Nessun record da caricare")
             return result
 
-        delete_sql = f"""
-            DELETE FROM {self._table_name}
-            WHERE OPI_RATA_VERSAMENTO = :rata
+        partition_name = f"P_{rata}"
+
+        truncate_sql = f"""
+            ALTER TABLE {self._table_name} TRUNCATE PARTITION {partition_name}
         """
+
+        rebuild_indices = [
+            f"ALTER INDEX IDX_SINIIS_PG_01 REBUILD PARTITION {partition_name}",
+            f"ALTER INDEX IDX_SINIIS_PG_02 REBUILD PARTITION {partition_name}",
+            f"ALTER INDEX IDX_SINIIS_PG_03 REBUILD PARTITION {partition_name}",
+            f"ALTER INDEX IDX_SINIIS_PG_04 REBUILD PARTITION {partition_name}",
+        ]
 
         insert_sql = f"""
             INSERT INTO {self._table_name} (
@@ -286,8 +294,13 @@ class OracleSiniisLoader:
         try:
             with self._get_connection() as conn:
                 with conn.cursor() as cur:
-                    cur.execute(delete_sql, {"rata": rata})
-                    logger.info(f"Cancellati {cur.rowcount} record esistenti per rata {rata}")
+                    cur.execute(truncate_sql)
+                    logger.info(f"TRUNCATE PARTITION {partition_name} completata")
+
+                    for idx_sql in rebuild_indices:
+                        cur.execute(idx_sql)
+                    logger.info(f"REBUILD indici per partizione {partition_name} completato")
+
                     for rec in records:
                         try:
                             cur.execute(insert_sql, (
@@ -338,3 +351,4 @@ class OracleSiniisLoader:
 
         logger.info(f"Caricati {result.loaded}/{result.total_lines} record, scartati {result.skipped}")
         return result
+
