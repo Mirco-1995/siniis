@@ -8,7 +8,7 @@ from typing import Annotated, Optional
 import typer
 from loguru import logger
 
-from opi_siniis.constants import SINIIS_PG_FILE_PATH
+from opi_siniis.constants import load_properties
 from opi_siniis.core import (
     LoadResult,
     OracleSiniisLoader,
@@ -37,15 +37,15 @@ def validate_rata(rata: int) -> bool:
     return True
 
 
-def resolve_file_path(file_param: Optional[str]) -> Path:
+def resolve_file_path(file_param: Optional[str], props: dict) -> Path:
     if file_param:
         file_path = Path(file_param)
-    elif SINIIS_PG_FILE_PATH:
-        file_path = Path(SINIIS_PG_FILE_PATH)
+    elif props.get("siniis_pg.path"):
+        file_path = Path(props["siniis_pg.path"])
     else:
         raise typer.BadParameter(
             "Nessun path file specificato. "
-            "Usa --file oppure configura SINIIS_PG_FILE_PATH in .env"
+            "Usa --file oppure configura siniis_pg.path nel file properties"
         )
 
     if not file_path.exists():
@@ -58,6 +58,22 @@ def resolve_file_path(file_param: Optional[str]) -> Path:
     return file_path
 
 
+def resolve_rata(rata_param: Optional[int], props: dict) -> int:
+    if rata_param:
+        return rata_param
+    if props.get("rata_versamento"):
+        try:
+            return int(props["rata_versamento"])
+        except ValueError:
+            raise typer.BadParameter(
+                f"rata_versamento nel file properties non valido: {props['rata_versamento']}"
+            )
+    raise typer.BadParameter(
+        "Nessuna rata specificata. "
+        "Usa --rata oppure configura rata_versamento nel file properties"
+    )
+
+
 @app.command()
 def run(
     file: Annotated[
@@ -68,12 +84,19 @@ def run(
         ),
     ] = None,
     rata: Annotated[
-        int,
+        Optional[int],
         typer.Option(
             "--rata", "-r",
             help="Rata versamento in formato YYYYMM"
         ),
-    ] = ...,
+    ] = None,
+    props: Annotated[
+        Optional[str],
+        typer.Option(
+            "--props", "-p",
+            help="Path alternativo del file di properties"
+        ),
+    ] = None,
     verbose: Annotated[
         bool,
         typer.Option(
@@ -91,24 +114,32 @@ def run(
 ):
     setup_logging(verbose)
 
-    if not validate_rata(rata):
-        logger.critical(f"Rata non valida: {rata}. Formato atteso: YYYYMM")
+    properties = load_properties(props)
+
+    try:
+        rata_value = resolve_rata(rata, properties)
+    except typer.BadParameter as e:
+        logger.critical(str(e))
+        raise typer.Exit(code=1)
+
+    if not validate_rata(rata_value):
+        logger.critical(f"Rata non valida: {rata_value}. Formato atteso: YYYYMM")
         raise typer.Exit(code=1)
 
     try:
-        file_path = resolve_file_path(file)
+        file_path = resolve_file_path(file, properties)
     except typer.BadParameter as e:
         logger.critical(str(e))
         raise typer.Exit(code=1)
 
     logger.info(f"File siniis_pg: {file_path}")
-    logger.info(f"Rata versamento: {rata}")
+    logger.info(f"Rata versamento: {rata_value}")
 
     records = []
     parse_errors = []
     total_lines = 0
 
-    for result in parse_file(file_path, rata):
+    for result in parse_file(file_path, rata_value):
         total_lines += 1
         if result.success and result.record:
             records.append(result.record)
@@ -132,12 +163,7 @@ def run(
 
     try:
         loader = OracleSiniisLoader()
-
-        if not loader.ensure_partition(rata):
-            logger.critical(f"Impossibile garantire partizione P_{rata}")
-            raise typer.Exit(code=1)
-
-        load_result = loader.load_records(records, rata)
+        load_result = loader.load_records(records, rata_value)
 
         logger.info("=" * 50)
         logger.info("REPORT CARICAMENTO")

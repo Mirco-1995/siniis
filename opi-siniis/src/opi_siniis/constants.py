@@ -1,10 +1,18 @@
 import os
+from configparser import ConfigParser
+from pathlib import Path
 
-from dotenv import load_dotenv
+DEFAULT_PROPERTIES_FILE = "opi-siniis.properties"
 
-load_dotenv()
-
-SINIIS_PG_FILE_PATH = os.getenv("SINIIS_PG_FILE_PATH")
+def load_properties(props_path: str | None = None) -> dict:
+    path = Path(props_path) if props_path else Path(DEFAULT_PROPERTIES_FILE)
+    config = {}
+    if path.exists():
+        parser = ConfigParser()
+        parser.read(path)
+        if parser.has_section("default"):
+            config = dict(parser.items("default"))
+    return config
 
 ORACLE_DSN = os.getenv("ORACLE_DSN")
 ORACLE_USER = os.getenv("ORACLE_USER")

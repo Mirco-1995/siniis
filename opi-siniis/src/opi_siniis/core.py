@@ -111,25 +111,31 @@ def parse_line(line: bytes, rata_versamento: int, line_number: int) -> ParseResu
         mod_pag = _decode_field(line, 2, 1) or None
         cod_rit = _decode_field(line, 3, 3)
         tipo_zona = _decode_field(line, 6, 1) or None
-        num_zona = _decode_field(line, 7, 4) or None
+
+        if tipo_zona == "L":
+            num_zona = _decode_field(line, 27, 4) or None
+        else:
+            num_zona = _decode_field(line, 7, 4) or None
+
         cod_cspesa_str = _decode_field(line, 11, 4)
         capitolo_bil_stato_str = _decode_field(line, 15, 4)
         iscrizione_str = _decode_field(line, 19, 8)
-
-        if tipo_zona == "L":
-            num_zona = _decode_field(line, 27, 4) or num_zona
-
+        provincia_str = _decode_field(line, 31, 3)
         importo_raw = _decode_field(line, 34, 8)
         data_trattamento_str = _decode_field(line, 42, 8)
         num_ordine_str = _decode_field(line, 50, 8)
         provenienza = _decode_field(line, 58, 1) or None
         tipo_ritenuta = _decode_field(line, 59, 1) or None
+        sesso = _decode_field(line, 67, 1) or None
+        part_time = _decode_field(line, 68, 1) or None
+        lsu = _decode_field(line, 69, 1) or None
         progr_emissione_str = _decode_field(line, 119, 2)
         num_pg = _decode_field(line, 121, 2) or None
 
         cod_cspesa = _parse_int_field(cod_cspesa_str)
         capitolo_bil_stato = _parse_int_field(capitolo_bil_stato_str)
         iscrizione = _parse_int_field(iscrizione_str)
+        provincia = _parse_int_field(provincia_str)
         data_trattamento = _parse_int_field(data_trattamento_str)
         num_ordine = _parse_int_field(num_ordine_str)
         progr_emissione = _parse_int_field(progr_emissione_str)
@@ -152,6 +158,8 @@ def parse_line(line: bytes, rata_versamento: int, line_number: int) -> ParseResu
             errors.append("CAPITOLO_BIL_STATO non valido")
         if iscrizione is None:
             errors.append("ISCRIZIONE non valido")
+        if provincia is None:
+            errors.append("PROVINCIA non valido")
         if data_trattamento is None:
             errors.append("DATA_TRATTAMENTO non valido")
         if num_ordine is None:
@@ -163,8 +171,6 @@ def parse_line(line: bytes, rata_versamento: int, line_number: int) -> ParseResu
                 error="; ".join(errors),
                 line_number=line_number
             )
-
-        provincia = 0
 
         record = SiniisRecord(
             rata_versamento=rata_versamento,
@@ -182,9 +188,9 @@ def parse_line(line: bytes, rata_versamento: int, line_number: int) -> ParseResu
             num_ordine=num_ordine,
             provenienza=provenienza,
             tipo_ritenuta=tipo_ritenuta,
-            sesso=None,
-            part_time=None,
-            lsu=None,
+            sesso=sesso,
+            part_time=part_time,
+            lsu=lsu,
             progr_emissione=progr_emissione,
             num_pg=num_pg,
         )
@@ -236,51 +242,6 @@ class OracleSiniisLoader:
             password=self._password,
             dsn=self._dsn,
         )
-
-    def check_partition_exists(self, rata: int) -> bool:
-        partition_name = f"P_{rata}"
-        query = """
-            SELECT COUNT(*)
-            FROM ALL_TAB_PARTITIONS
-            WHERE TABLE_NAME = 'OPI_SINIIS_PG'
-              AND TABLE_OWNER = :owner
-              AND PARTITION_NAME = :partition_name
-        """
-        with self._get_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(query, {"owner": self._owner, "partition_name": partition_name})
-                count = cur.fetchone()[0]
-                return count > 0
-
-    def create_partition(self, rata: int) -> bool:
-        partition_name = f"P_{rata}"
-        next_rata = rata + 1
-        if rata % 100 == 12:
-            next_rata = (rata // 100 + 1) * 100 + 1
-
-        alter_sql = f"""
-            ALTER TABLE {self._table_name}
-            ADD PARTITION {partition_name}
-            VALUES LESS THAN ({next_rata})
-            TABLESPACE EMISSIONI_01
-        """
-        try:
-            with self._get_connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute(alter_sql)
-                conn.commit()
-            logger.info(f"Creata partizione {partition_name}")
-            return True
-        except Exception as e:
-            logger.error(f"Errore creazione partizione {partition_name}: {e}")
-            return False
-
-    def ensure_partition(self, rata: int) -> bool:
-        if self.check_partition_exists(rata):
-            logger.info(f"Partizione P_{rata} già esistente")
-            return True
-        logger.warning(f"Partizione P_{rata} non trovata, tentativo di creazione...")
-        return self.create_partition(rata)
 
     def load_records(self, records: list[SiniisRecord], rata: int) -> LoadResult:
         result = LoadResult(total_lines=len(records))
@@ -348,7 +309,10 @@ class OracleSiniisLoader:
                         except oracledb.DatabaseError as e:
                             error_obj, = e.args
                             if error_obj.code == 14400:
-                                logger.critical(f"ORA-14400: Partizione non trovata per rata {rec.rata_versamento}")
+                                logger.critical(
+                                    f"ORA-14400: Partizione non trovata per rata {rec.rata_versamento}. "
+                                    "La partizione mensile è di competenza del DBA."
+                                )
                                 raise
                             else:
                                 result.skipped += 1
@@ -360,8 +324,8 @@ class OracleSiniisLoader:
             error_obj, = e.args
             if error_obj.code == 14400:
                 raise RuntimeError(
-                    f"ERRORE BLOCCANTE ORA-14400: la partizione per rata {rata} non esiste. "
-                    "Esecuzione interrotta."
+                    f"ORA-14400: la partizione per rata {rata} non esiste. "
+                    "La partizione è di competenza del DBA. Esecuzione interrotta."
                 )
             raise
 
