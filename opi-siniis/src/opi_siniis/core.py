@@ -208,7 +208,19 @@ def parse_line(line: bytes, rata_versamento: int, line_number: int) -> ParseResu
 def parse_file(file_path: Path, rata_versamento: int) -> Generator[ParseResult, None, None]:
     logger.info(f"Parsing file: {file_path}")
     with open(file_path, "rb") as f:
-        for line_number, line in enumerate(f, start=1):
+        line_number = 0
+        while True:
+            line = f.read(122)
+            if not line:
+                break
+            line_number += 1
+            if len(line) != 122:
+                yield ParseResult(
+                    success=False,
+                    error=f"Lunghezza record non valida: attesa 122, trovata {len(line)}",
+                    line_number=line_number,
+                )
+                break
             yield parse_line(line, rata_versamento, line_number)
 
 
@@ -301,7 +313,7 @@ class OracleSiniisLoader:
                         cur.execute(idx_sql)
                     logger.info(f"REBUILD indici per partizione {partition_name} completato")
 
-                    for rec in records:
+                    for rec_number, rec in enumerate(records, start=1):
                         try:
                             cur.execute(insert_sql, (
                                 rec.rata_versamento,
@@ -336,8 +348,8 @@ class OracleSiniisLoader:
                                 raise
                             else:
                                 result.skipped += 1
-                                result.errors.append(f"Errore DB record: {e}")
-                                logger.warning(f"Scartato record: {e}")
+                                result.errors.append(f"Record {rec_number}: {e}")
+                                logger.warning(f"Scartato record {rec_number}: {e}")
                 conn.commit()
 
         except oracledb.DatabaseError as e:
@@ -351,4 +363,3 @@ class OracleSiniisLoader:
 
         logger.info(f"Caricati {result.loaded}/{result.total_lines} record, scartati {result.skipped}")
         return result
-

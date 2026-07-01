@@ -145,8 +145,7 @@ def run(
             records.append(result.record)
         else:
             parse_errors.append(f"Riga {result.line_number}: {result.error}")
-            if verbose:
-                logger.warning(f"Scartata riga {result.line_number}: {result.error}")
+            logger.warning(f"Scartata riga {result.line_number}: {result.error}")
 
     logger.info(f"Parsing completato: {len(records)}/{total_lines} record validi")
 
