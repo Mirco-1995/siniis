@@ -18,13 +18,12 @@ from opi_siniis.core import (
 app = typer.Typer(add_completion=False)
 
 
-def setup_logging(verbose: bool = False):
+def setup_logging():
     logger.remove()
-    level = "DEBUG" if verbose else "INFO"
     logger.add(
         sys.stderr,
         format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <level>{message}</level>",
-        level=level,
+        level="INFO",
     )
 
 
@@ -79,40 +78,26 @@ def run(
     file: Annotated[
         Optional[str],
         typer.Option(
-            "--file", "-f",
+            "--file",
             help="Path assoluto del file siniis_pg"
         ),
     ] = None,
     rata: Annotated[
         Optional[int],
         typer.Option(
-            "--rata", "-r",
+            "--rata",
             help="Rata versamento in formato YYYYMM"
         ),
     ] = None,
     props: Annotated[
         Optional[str],
         typer.Option(
-            "--props", "-p",
+            "--props",
             help="Path alternativo del file di properties"
         ),
     ] = None,
-    verbose: Annotated[
-        bool,
-        typer.Option(
-            "--verbose", "-v",
-            help="Abilita logging dettagliato"
-        ),
-    ] = False,
-    dry_run: Annotated[
-        bool,
-        typer.Option(
-            "--dry-run",
-            help="Esegue solo parsing senza caricare su Oracle"
-        ),
-    ] = False,
 ):
-    setup_logging(verbose)
+    setup_logging()
 
     properties = load_properties(props)
 
@@ -154,10 +139,6 @@ def run(
 
     if not records:
         logger.warning("Nessun record valido da caricare")
-        raise typer.Exit(code=0)
-
-    if dry_run:
-        logger.info("[DRY-RUN] Nessun caricamento effettuato")
         raise typer.Exit(code=0)
 
     try:

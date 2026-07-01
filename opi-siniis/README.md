@@ -22,8 +22,6 @@ opi-siniis
 | `--file`  | Path assoluto del file siniis_pg | No (fallback da properties) |
 | `--rata`  | Rata versamento formato YYYYMM | No (fallback da properties) |
 | `--props` | Path alternativo del file di properties | No |
-| `--verbose` | Abilita logging dettagliato | No |
-| `--dry-run` | Esegue solo parsing senza caricare su Oracle | No |
 
 ## Configurazione
 
