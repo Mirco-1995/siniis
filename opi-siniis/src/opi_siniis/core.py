@@ -209,18 +209,27 @@ def parse_line(line: bytes, rata_versamento: int, line_number: int) -> ParseResu
 def parse_file(file_path: Path, rata_versamento: int) -> Generator[ParseResult, None, None]:
     logger.info(f"Parsing file: {file_path}")
     with open(file_path, "rb") as f:
-        line_number = 0
-        while True:
-            line = f.read(122)
-            if not line:
+        has_line_separators = False
+        while chunk := f.read(64 * 1024):
+            if b"\n" in chunk or b"\r" in chunk:
+                has_line_separators = True
                 break
-            line_number += 1
+        f.seek(0)
+
+        if has_line_separators:
+            records = (line.rstrip(b"\r\n") for line in f)
+        else:
+            records = iter(lambda: f.read(122), b"")
+
+        for line_number, line in enumerate(records, start=1):
             if len(line) != 122:
                 yield ParseResult(
                     success=False,
                     error=f"Lunghezza record non valida: attesa 122, trovata {len(line)}",
                     line_number=line_number,
                 )
+                if has_line_separators:
+                    continue
                 break
             yield parse_line(line, rata_versamento, line_number)
 
@@ -282,10 +291,10 @@ class OracleSiniisLoader:
         """
 
         rebuild_indices = [
-            f"ALTER INDEX IDX_SINIIS_PG_01 REBUILD PARTITION {partition_name}",
-            f"ALTER INDEX IDX_SINIIS_PG_02 REBUILD PARTITION {partition_name}",
-            f"ALTER INDEX IDX_SINIIS_PG_03 REBUILD PARTITION {partition_name}",
-            f"ALTER INDEX IDX_SINIIS_PG_04 REBUILD PARTITION {partition_name}",
+            f"ALTER INDEX {self._owner}.IDX_SINIIS_PG_01 REBUILD PARTITION {partition_name}",
+            f"ALTER INDEX {self._owner}.IDX_SINIIS_PG_02 REBUILD PARTITION {partition_name}",
+            f"ALTER INDEX {self._owner}.IDX_SINIIS_PG_03 REBUILD PARTITION {partition_name}",
+            f"ALTER INDEX {self._owner}.IDX_SINIIS_PG_04 REBUILD PARTITION {partition_name}",
         ]
 
         insert_sql = f"""
