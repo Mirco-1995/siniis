@@ -166,7 +166,7 @@ def run(
             raise typer.Exit(code=1)
 
         logger.success(f"Caricamento completato: {load_result.loaded} record")
-        raise typer.Exit(code=0)
+        return
 
     except RuntimeError as e:
         logger.critical(str(e))
