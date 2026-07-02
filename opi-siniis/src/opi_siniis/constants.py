@@ -19,6 +19,7 @@ def load_properties(props_path: str | None = None) -> dict:
 ORACLE_DSN = os.getenv("ORACLE_DSN")
 ORACLE_USER = os.getenv("ORACLE_USER")
 ORACLE_PASSWORD = os.getenv("ORACLE_PASSWORD")
+ORACLE_HOME = os.getenv("ORACLE_HOME")
 ORACLE_OWNER = os.getenv("ORACLE_OWNER", "SPTOWNER")
 
 NEGATIVE_SIGNED_MAP = {

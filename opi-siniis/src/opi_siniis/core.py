@@ -15,6 +15,7 @@ except ImportError:
 from opi_siniis.constants import (
     NEGATIVE_SIGNED_MAP,
     ORACLE_DSN,
+    ORACLE_HOME,
     ORACLE_OWNER,
     ORACLE_PASSWORD,
     ORACLE_USER,
@@ -248,7 +249,19 @@ class OracleSiniisLoader:
 
         self._table_name = f"{self._owner}.OPI_SINIIS_PG"
 
+    def _init_oracle_client(self):
+        if hasattr(oracledb, "is_thin_mode") and not oracledb.is_thin_mode():
+            return
+
+        oracle_home = (ORACLE_HOME or "").strip()
+        if not oracle_home:
+            raise EnvironmentError("Variabile d'ambiente non definita: ORACLE_HOME")
+
+        oracledb.init_oracle_client(lib_dir=os.path.join(oracle_home, "lib"))
+        logger.info("Client Oracle inizializzato in modalita thick")
+
     def _get_connection(self):
+        self._init_oracle_client()
         return oracledb.connect(
             user=self._user,
             password=self._password,
