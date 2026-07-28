@@ -44,6 +44,7 @@ class SiniisRecord:
     lsu: str | None
     progr_emissione: int | None
     num_pg: str | None
+    tipo_pg: str | None
 
 
 @dataclass
@@ -132,6 +133,7 @@ def parse_line(line: bytes, rata_versamento: int, line_number: int) -> ParseResu
         lsu = _decode_field(line, 69, 1) or None
         progr_emissione_str = _decode_field(line, 119, 2)
         num_pg = _decode_field(line, 121, 2) or None
+        tipo_pg = _decode_field(line, 123, 6) or None
 
         cod_cspesa = _parse_int_field(cod_cspesa_str)
         capitolo_bil_stato = _parse_int_field(capitolo_bil_stato_str)
@@ -194,6 +196,7 @@ def parse_line(line: bytes, rata_versamento: int, line_number: int) -> ParseResu
             lsu=lsu,
             progr_emissione=progr_emissione,
             num_pg=num_pg,
+            tipo_pg=tipo_pg,
         )
 
         return ParseResult(success=True, record=record, line_number=line_number)
@@ -219,13 +222,13 @@ def parse_file(file_path: Path, rata_versamento: int) -> Generator[ParseResult, 
         if has_line_separators:
             records = (line.rstrip(b"\r\n") for line in f)
         else:
-            records = iter(lambda: f.read(122), b"")
+            records = iter(lambda: f.read(128), b"")
 
         for line_number, line in enumerate(records, start=1):
-            if len(line) != 122:
+            if len(line) != 128:
                 yield ParseResult(
                     success=False,
-                    error=f"Lunghezza record non valida: attesa 122, trovata {len(line)}",
+                    error=f"Lunghezza record non valida: attesa 128, trovata {len(line)}",
                     line_number=line_number,
                 )
                 if has_line_separators:
@@ -318,10 +321,12 @@ class OracleSiniisLoader:
                 OPI_PART_TIME,
                 OPI_LSU,
                 OPI_PROGR_EMISSIONE,
-                OPI_NUM_PG
+                OPI_NUM_PG,
+                OPI_TIPO_PG
             ) VALUES (
                 :1, :2, :3, :4, :5, :6, :7, :8, :9, :10,
-                :11, :12, :13, :14, :15, :16, :17, :18, :19, :20
+                :11, :12, :13, :14, :15, :16, :17, :18, :19, :20,
+                :21
             )
         """
 
@@ -358,6 +363,7 @@ class OracleSiniisLoader:
                                 rec.lsu,
                                 rec.progr_emissione,
                                 rec.num_pg,
+                                rec.tipo_pg,
                             ))
                             result.loaded += 1
                         except oracledb.DatabaseError as e:
