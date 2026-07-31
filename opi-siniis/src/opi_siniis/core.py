@@ -132,8 +132,8 @@ def parse_line(line: bytes, rata_versamento: int, line_number: int) -> ParseResu
         part_time = _decode_field(line, 68, 1) or None
         lsu = _decode_field(line, 69, 1) or None
         progr_emissione_str = _decode_field(line, 119, 2)
-        num_pg = _decode_field(line, 121, 2) or None
-        tipo_pg = _decode_field(line, 123, 6) or None
+        num_pg = _decode_field(line, 131, 2) or None
+        tipo_pg = _decode_field(line, 133, 6) or None
 
         cod_cspesa = _parse_int_field(cod_cspesa_str)
         capitolo_bil_stato = _parse_int_field(capitolo_bil_stato_str)
@@ -222,13 +222,13 @@ def parse_file(file_path: Path, rata_versamento: int) -> Generator[ParseResult, 
         if has_line_separators:
             records = (line.rstrip(b"\r\n") for line in f)
         else:
-            records = iter(lambda: f.read(128), b"")
+            records = iter(lambda: f.read(137), b"")
 
         for line_number, line in enumerate(records, start=1):
-            if len(line) != 128:
+            if len(line) < 137:
                 yield ParseResult(
                     success=False,
-                    error=f"Lunghezza record non valida: attesa 128, trovata {len(line)}",
+                    error=f"Lunghezza record non valida: attesi almeno 137 byte, trovata {len(line)}",
                     line_number=line_number,
                 )
                 if has_line_separators:
