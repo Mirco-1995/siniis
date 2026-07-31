@@ -83,6 +83,8 @@ def parse_cobol_signed(raw_value: str) -> int:
     if not numeric.isdigit():
         raise ValueError(f"Valore importo non riconosciuto: {raw_value}")
 
+    if last_char in COBOL_NUMERIC_MAP:
+        return int(numeric) * -1
     return int(numeric)
 
 
