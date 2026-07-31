@@ -22,15 +22,15 @@ ORACLE_PASSWORD = os.getenv("ORACLE_PASSWORD")
 ORACLE_HOME = os.getenv("ORACLE_HOME")
 ORACLE_OWNER = os.getenv("ORACLE_OWNER", "SPTOWNER")
 
-NEGATIVE_SIGNED_MAP = {
-    "A": "0",
-    "J": "1",
-    "K": "2",
-    "L": "3",
-    "M": "4",
-    "N": "5",
-    "O": "6",
-    "P": "7",
-    "Q": "8",
-    "R": "9",
+COBOL_NUMERIC_MAP = {
+    "p": "0",
+    "q": "1",
+    "r": "2",
+    "s": "3",
+    "t": "4",
+    "u": "5",
+    "v": "6",
+    "w": "7",
+    "x": "8",
+    "y": "9",
 }

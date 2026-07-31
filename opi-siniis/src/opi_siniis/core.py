@@ -13,7 +13,7 @@ except ImportError:
     oracledb = None
 
 from opi_siniis.constants import (
-    NEGATIVE_SIGNED_MAP,
+    COBOL_NUMERIC_MAP,
     ORACLE_DSN,
     ORACLE_HOME,
     ORACLE_OWNER,
@@ -72,12 +72,10 @@ def parse_cobol_signed(raw_value: str) -> int:
     if not raw_value:
         return 0
 
-    last_char = raw_value[-1].upper()
-    sign = 1
+    last_char = raw_value[-1]
 
-    if last_char in NEGATIVE_SIGNED_MAP:
-        sign = -1
-        mapped_digit = NEGATIVE_SIGNED_MAP[last_char]
+    if last_char in COBOL_NUMERIC_MAP:
+        mapped_digit = COBOL_NUMERIC_MAP[last_char]
         numeric = f"{raw_value[:-1]}{mapped_digit}"
     else:
         numeric = raw_value
@@ -85,7 +83,7 @@ def parse_cobol_signed(raw_value: str) -> int:
     if not numeric.isdigit():
         raise ValueError(f"Valore importo non riconosciuto: {raw_value}")
 
-    return int(numeric) * sign
+    return int(numeric)
 
 
 def _decode_field(raw: bytes, start: int, length: int) -> str:
