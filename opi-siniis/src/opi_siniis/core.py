@@ -36,7 +36,7 @@ class SiniisRecord:
     provincia: int
     importo: int
     data_trattamento: int
-    num_ordine: int
+    num_ordine: int | None
     provenienza: str | None
     tipo_ritenuta: str | None
     sesso: str | None
@@ -165,9 +165,6 @@ def parse_line(line: bytes, rata_versamento: int, line_number: int) -> ParseResu
             errors.append("PROVINCIA non valido")
         if data_trattamento is None:
             errors.append("DATA_TRATTAMENTO non valido")
-        if num_ordine is None:
-            errors.append("NUM_ORDINE non valido")
-
         if errors:
             return ParseResult(
                 success=False,
