@@ -36,7 +36,7 @@ class SiniisRecord:
     provincia: int
     importo: int
     data_trattamento: int
-    num_ordine: int | None
+    num_ordine: int
     provenienza: str | None
     tipo_ritenuta: str | None
     sesso: str | None
@@ -141,6 +141,8 @@ def parse_line(line: bytes, rata_versamento: int, line_number: int) -> ParseResu
         provincia = _parse_int_field(provincia_str)
         data_trattamento = _parse_int_field(data_trattamento_str)
         num_ordine = _parse_int_field(num_ordine_str)
+        if num_ordine is None:
+            num_ordine = 0
         progr_emissione = _parse_int_field(progr_emissione_str)
 
         try:
