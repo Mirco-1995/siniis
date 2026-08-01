@@ -10,9 +10,12 @@ from loguru import logger
 
 from opi_siniis.constants import load_properties
 from opi_siniis.core import (
+    LoadResult,
+    MIN_RECORD_LENGTH,
     OracleSiniisLoader,
+    ParseResult,
     SiniisRecord,
-    parse_file,
+    parse_line,
 )
 
 app = typer.Typer(add_completion=False)
@@ -75,6 +78,53 @@ def resolve_rata(rata_param: Optional[int], props: dict) -> int:
     )
 
 
+def merge_load_result(total: LoadResult, partial: LoadResult):
+    total.total_lines += partial.total_lines
+    total.loaded += partial.loaded
+    total.skipped += partial.skipped
+    total.errors.extend(partial.errors)
+
+
+def load_chunk(
+    loader: OracleSiniisLoader,
+    chunk: list[SiniisRecord],
+    rata: int,
+    chunk_number: int,
+    truncate_partition: bool,
+    record_number_offset: int,
+) -> LoadResult:
+    logger.info(f"Caricamento blocco {chunk_number}: {len(chunk)} record validi")
+    result = loader.load_records(
+        chunk,
+        rata,
+        truncate_partition=truncate_partition,
+        record_number_offset=record_number_offset,
+    )
+    logger.info(
+        f"Blocco {chunk_number} completato: "
+        f"{result.loaded} caricati, {result.skipped} scartati DB"
+    )
+    return result
+
+
+def file_has_line_separators(file_path: Path) -> bool:
+    with open(file_path, "rb") as input_file:
+        while True:
+            chunk = input_file.read(64 * 1024)
+            if not chunk:
+                return False
+            if b"\n" in chunk or b"\r" in chunk:
+                return True
+
+
+def build_length_error(line: bytes, line_number: int) -> ParseResult:
+    return ParseResult(
+        success=False,
+        error=f"Lunghezza record non valida: attesi almeno {MIN_RECORD_LENGTH} byte, trovata {len(line)}",
+        line_number=line_number,
+    )
+
+
 @app.command()
 def run(
     file: Annotated[
@@ -125,41 +175,75 @@ def run(
     total_lines = 0
     valid_records = 0
     parse_errors_count = 0
-
-    def iter_record_chunks():
-        nonlocal total_lines, valid_records, parse_errors_count
-
-        chunk: list[SiniisRecord] = []
-        chunk_number = 1
-
-        for result in parse_file(file_path, rata_value):
-            total_lines += 1
-            if result.success and result.record:
-                chunk.append(result.record)
-                valid_records += 1
-
-                if len(chunk) >= LOAD_CHUNK_SIZE:
-                    logger.info(
-                        f"Blocco {chunk_number} pronto: {len(chunk)} record validi "
-                        f"su {total_lines} righe lette"
-                    )
-                    yield chunk
-                    chunk = []
-                    chunk_number += 1
-            else:
-                parse_errors_count += 1
-                logger.warning(f"Scartata riga {result.line_number}: {result.error}")
-
-        if chunk:
-            logger.info(
-                f"Blocco {chunk_number} pronto: {len(chunk)} record validi "
-                f"su {total_lines} righe lette"
-            )
-            yield chunk
+    chunk_number = 1
+    partition_prepared = False
+    chunk: list[SiniisRecord] = []
+    load_result = LoadResult()
+    loader: OracleSiniisLoader | None = None
 
     try:
-        loader = OracleSiniisLoader()
-        load_result = loader.load_record_chunks(iter_record_chunks(), rata_value)
+        logger.info(f"Parsing file: {file_path}")
+        has_line_separators = file_has_line_separators(file_path)
+
+        with open(file_path, "rb") as input_file:
+            while True:
+                if has_line_separators:
+                    line = input_file.readline()
+                    if not line:
+                        break
+                    line = line.rstrip(b"\r\n")
+                else:
+                    line = input_file.read(MIN_RECORD_LENGTH)
+                    if not line:
+                        break
+
+                total_lines += 1
+
+                if len(line) < MIN_RECORD_LENGTH:
+                    result = build_length_error(line, total_lines)
+                else:
+                    result = parse_line(line, rata_value, total_lines)
+
+                if result.success and result.record:
+                    chunk.append(result.record)
+                    valid_records += 1
+                else:
+                    parse_errors_count += 1
+                    logger.warning(f"Scartata riga {result.line_number}: {result.error}")
+                    continue
+
+                if len(chunk) >= LOAD_CHUNK_SIZE:
+                    if loader is None:
+                        loader = OracleSiniisLoader()
+
+                    partial_result = load_chunk(
+                        loader=loader,
+                        chunk=chunk,
+                        rata=rata_value,
+                        chunk_number=chunk_number,
+                        truncate_partition=not partition_prepared,
+                        record_number_offset=load_result.total_lines,
+                    )
+                    merge_load_result(load_result, partial_result)
+
+                    partition_prepared = True
+                    chunk = []
+                    chunk_number += 1
+
+        if chunk:
+            if loader is None:
+                loader = OracleSiniisLoader()
+
+            partial_result = load_chunk(
+                loader=loader,
+                chunk=chunk,
+                rata=rata_value,
+                chunk_number=chunk_number,
+                truncate_partition=not partition_prepared,
+                record_number_offset=load_result.total_lines,
+            )
+            merge_load_result(load_result, partial_result)
+            partition_prepared = True
 
         logger.info(f"Parsing completato: {valid_records}/{total_lines} record validi")
 
