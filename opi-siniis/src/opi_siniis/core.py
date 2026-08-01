@@ -20,6 +20,8 @@ from opi_siniis.constants import (
 )
 
 MIN_RECORD_LENGTH = 137
+DB_INSERT_BATCH_SIZE = 10_000
+DB_PROGRESS_STEP = 100_000
 
 
 @dataclass
@@ -252,6 +254,56 @@ class OracleSiniisLoader:
             dsn=self._dsn,
         )
 
+    def _record_to_params(self, rec: SiniisRecord) -> tuple:
+        return (
+            rec.rata_versamento,
+            rec.tipo_rit_raggrup,
+            rec.mod_pag,
+            rec.cod_rit,
+            rec.tipo_zona,
+            rec.num_zona,
+            rec.cod_cspesa,
+            rec.capitolo_bil_stato,
+            rec.iscrizione,
+            rec.provincia,
+            rec.importo,
+            rec.data_trattamento,
+            rec.num_ordine,
+            rec.provenienza,
+            rec.tipo_ritenuta,
+            rec.sesso,
+            rec.part_time,
+            rec.lsu,
+            rec.progr_emissione,
+            rec.num_pg,
+            rec.tipo_pg,
+        )
+
+    def _load_failed_batch_one_by_one(
+        self,
+        cur,
+        insert_sql: str,
+        records: list[SiniisRecord],
+        record_number_offset: int,
+        result: LoadResult,
+    ):
+        for rec_index, rec in enumerate(records, start=record_number_offset + 1):
+            try:
+                cur.execute(insert_sql, self._record_to_params(rec))
+                result.loaded += 1
+            except oracledb.DatabaseError as e:
+                error_obj, = e.args
+                if error_obj.code == 14400:
+                    logger.critical(
+                        f"ORA-14400: Partizione non trovata per rata {rec.rata_versamento}. "
+                        "La partizione mensile e' di competenza del DBA."
+                    )
+                    raise
+
+                result.skipped += 1
+                result.errors.append(f"Record {rec_index}: {e}")
+                logger.warning(f"Scartato record {rec_index}: {e}")
+
     def load_records(
         self,
         records: list[SiniisRecord],
@@ -319,44 +371,43 @@ class OracleSiniisLoader:
                             cur.execute(idx_sql)
                         logger.info(f"REBUILD indici per partizione {partition_name} completato")
 
-                    for rec_number, rec in enumerate(records, start=record_number_offset + 1):
+                    next_progress = DB_PROGRESS_STEP
+
+                    for batch_start in range(0, len(records), DB_INSERT_BATCH_SIZE):
+                        batch = records[batch_start:batch_start + DB_INSERT_BATCH_SIZE]
+                        batch_params = [self._record_to_params(rec) for rec in batch]
+                        first_record_number = record_number_offset + batch_start
+
                         try:
-                            cur.execute(insert_sql, (
-                                rec.rata_versamento,
-                                rec.tipo_rit_raggrup,
-                                rec.mod_pag,
-                                rec.cod_rit,
-                                rec.tipo_zona,
-                                rec.num_zona,
-                                rec.cod_cspesa,
-                                rec.capitolo_bil_stato,
-                                rec.iscrizione,
-                                rec.provincia,
-                                rec.importo,
-                                rec.data_trattamento,
-                                rec.num_ordine,
-                                rec.provenienza,
-                                rec.tipo_ritenuta,
-                                rec.sesso,
-                                rec.part_time,
-                                rec.lsu,
-                                rec.progr_emissione,
-                                rec.num_pg,
-                                rec.tipo_pg,
-                            ))
-                            result.loaded += 1
+                            cur.executemany(insert_sql, batch_params)
+                            result.loaded += len(batch)
                         except oracledb.DatabaseError as e:
                             error_obj, = e.args
                             if error_obj.code == 14400:
                                 logger.critical(
-                                    f"ORA-14400: Partizione non trovata per rata {rec.rata_versamento}. "
+                                    f"ORA-14400: Partizione non trovata per rata {rata}. "
                                     "La partizione mensile e' di competenza del DBA."
                                 )
                                 raise
 
-                            result.skipped += 1
-                            result.errors.append(f"Record {rec_number}: {e}")
-                            logger.warning(f"Scartato record {rec_number}: {e}")
+                            logger.warning(
+                                "Errore su un batch DB: riprovo i record del batch uno alla volta"
+                            )
+                            self._load_failed_batch_one_by_one(
+                                cur=cur,
+                                insert_sql=insert_sql,
+                                records=batch,
+                                record_number_offset=first_record_number,
+                                result=result,
+                            )
+
+                        processed = batch_start + len(batch)
+                        if processed >= next_progress or processed == result.total_lines:
+                            logger.info(
+                                f"Inserimento blocco: {processed}/{result.total_lines} record elaborati"
+                            )
+                            while next_progress <= processed:
+                                next_progress += DB_PROGRESS_STEP
 
                 conn.commit()
 
