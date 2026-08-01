@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from itertools import chain
 from pathlib import Path
-from typing import Generator
+from typing import Generator, Iterable
 
 from loguru import logger
 
@@ -279,7 +280,154 @@ class OracleSiniisLoader:
             dsn=self._dsn,
         )
 
+    def load_record_chunks(
+        self,
+        record_chunks: Iterable[list[SiniisRecord]],
+        rata: int,
+    ) -> LoadResult:
+        result = LoadResult()
+
+        chunk_iterator = iter(record_chunks)
+        first_chunk = None
+        for chunk in chunk_iterator:
+            if chunk:
+                first_chunk = chunk
+                break
+
+        if first_chunk is None:
+            logger.info("Nessun record da caricare")
+            return result
+
+        partition_name = f"P_{rata}"
+
+        truncate_sql = f"""
+            ALTER TABLE {self._table_name} TRUNCATE PARTITION {partition_name}
+        """
+
+        rebuild_indices = [
+            f"ALTER INDEX IDX_SINIIS_PG_01 REBUILD PARTITION {partition_name}",
+            f"ALTER INDEX IDX_SINIIS_PG_02 REBUILD PARTITION {partition_name}",
+            f"ALTER INDEX IDX_SINIIS_PG_03 REBUILD PARTITION {partition_name}",
+            f"ALTER INDEX IDX_SINIIS_PG_04 REBUILD PARTITION {partition_name}",
+        ]
+
+        insert_sql = f"""
+            INSERT INTO {self._table_name} (
+                OPI_RATA_VERSAMENTO,
+                OPI_TIPO_RIT_RAGGRUP,
+                OPI_MOD_PAG,
+                OPI_COD_RIT,
+                OPI_TIPO_ZONA,
+                OPI_NUM_ZONA,
+                OPI_COD_CSPESA,
+                OPI_CAPITOLO_BIL_STATO,
+                OPI_ISCRIZIONE,
+                OPI_PROVINCIA,
+                OPI_IMPORTO,
+                OPI_DATA_TRATTAMENTO,
+                OPI_NUM_ORDINE,
+                OPI_PROVENIENZA,
+                OPI_TIPO_RITENUTA,
+                OPI_SESSO,
+                OPI_PART_TIME,
+                OPI_LSU,
+                OPI_PROGR_EMISSIONE,
+                OPI_NUM_PG,
+                OPI_TIPO_PG
+            ) VALUES (
+                :1, :2, :3, :4, :5, :6, :7, :8, :9, :10,
+                :11, :12, :13, :14, :15, :16, :17, :18, :19, :20,
+                :21
+            )
+        """
+
+        try:
+            with self._get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(truncate_sql)
+                    logger.info(f"TRUNCATE PARTITION {partition_name} completata")
+
+                    for idx_sql in rebuild_indices:
+                        cur.execute(idx_sql)
+                    logger.info(f"REBUILD indici per partizione {partition_name} completato")
+
+                    for chunk_number, records in enumerate(
+                        chain([first_chunk], chunk_iterator),
+                        start=1,
+                    ):
+                        if not records:
+                            continue
+
+                        logger.info(f"Caricamento blocco {chunk_number}: {len(records)} record")
+                        loaded_before = result.loaded
+                        skipped_before = result.skipped
+
+                        for rec in records:
+                            result.total_lines += 1
+                            rec_number = result.total_lines
+
+                            try:
+                                cur.execute(insert_sql, (
+                                    rec.rata_versamento,
+                                    rec.tipo_rit_raggrup,
+                                    rec.mod_pag,
+                                    rec.cod_rit,
+                                    rec.tipo_zona,
+                                    rec.num_zona,
+                                    rec.cod_cspesa,
+                                    rec.capitolo_bil_stato,
+                                    rec.iscrizione,
+                                    rec.provincia,
+                                    rec.importo,
+                                    rec.data_trattamento,
+                                    rec.num_ordine,
+                                    rec.provenienza,
+                                    rec.tipo_ritenuta,
+                                    rec.sesso,
+                                    rec.part_time,
+                                    rec.lsu,
+                                    rec.progr_emissione,
+                                    rec.num_pg,
+                                    rec.tipo_pg,
+                                ))
+                                result.loaded += 1
+                            except oracledb.DatabaseError as e:
+                                error_obj, = e.args
+                                if error_obj.code == 14400:
+                                    logger.critical(
+                                        f"ORA-14400: Partizione non trovata per rata {rec.rata_versamento}. "
+                                        "La partizione mensile Ã¨ di competenza del DBA."
+                                    )
+                                    raise
+                                else:
+                                    result.skipped += 1
+                                    result.errors.append(f"Record {rec_number}: {e}")
+                                    logger.warning(f"Scartato record {rec_number}: {e}")
+
+                        conn.commit()
+                        logger.info(
+                            f"Blocco {chunk_number} completato: "
+                            f"{result.loaded - loaded_before} caricati, "
+                            f"{result.skipped - skipped_before} scartati DB, "
+                            f"{result.loaded} caricati totali"
+                        )
+
+        except oracledb.DatabaseError as e:
+            error_obj, = e.args
+            if error_obj.code == 14400:
+                raise RuntimeError(
+                    f"ORA-14400: la partizione per rata {rata} non esiste. "
+                    "La partizione Ã¨ di competenza del DBA. Esecuzione interrotta."
+                )
+            raise
+
+        logger.info(f"Caricati {result.loaded}/{result.total_lines} record, scartati {result.skipped}")
+        return result
+
     def load_records(self, records: list[SiniisRecord], rata: int) -> LoadResult:
+        return self.load_record_chunks([records], rata)
+
+    def _load_records_legacy(self, records: list[SiniisRecord], rata: int) -> LoadResult:
         result = LoadResult(total_lines=len(records))
 
         if not records:

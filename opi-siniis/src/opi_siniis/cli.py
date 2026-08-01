@@ -10,12 +10,14 @@ from loguru import logger
 
 from opi_siniis.constants import load_properties
 from opi_siniis.core import (
-    LoadResult,
     OracleSiniisLoader,
+    SiniisRecord,
     parse_file,
 )
 
 app = typer.Typer(add_completion=False)
+
+LOAD_CHUNK_SIZE = 5_000_000
 
 
 def setup_logging():
@@ -120,37 +122,60 @@ def run(
     logger.info(f"File siniis_pg: {file_path}")
     logger.info(f"Rata versamento: {rata_value}")
 
-    records = []
-    parse_errors = []
     total_lines = 0
+    valid_records = 0
+    parse_errors_count = 0
 
-    for result in parse_file(file_path, rata_value):
-        total_lines += 1
-        if result.success and result.record:
-            records.append(result.record)
-        else:
-            parse_errors.append(f"Riga {result.line_number}: {result.error}")
-            logger.warning(f"Scartata riga {result.line_number}: {result.error}")
+    def iter_record_chunks():
+        nonlocal total_lines, valid_records, parse_errors_count
 
-    logger.info(f"Parsing completato: {len(records)}/{total_lines} record validi")
+        chunk: list[SiniisRecord] = []
+        chunk_number = 1
 
-    if parse_errors:
-        logger.warning(f"Record scartati in parsing: {len(parse_errors)}")
+        for result in parse_file(file_path, rata_value):
+            total_lines += 1
+            if result.success and result.record:
+                chunk.append(result.record)
+                valid_records += 1
 
-    if not records:
-        logger.warning("Nessun record valido da caricare")
-        raise typer.Exit(code=0)
+                if len(chunk) >= LOAD_CHUNK_SIZE:
+                    logger.info(
+                        f"Blocco {chunk_number} pronto: {len(chunk)} record validi "
+                        f"su {total_lines} righe lette"
+                    )
+                    yield chunk
+                    chunk = []
+                    chunk_number += 1
+            else:
+                parse_errors_count += 1
+                logger.warning(f"Scartata riga {result.line_number}: {result.error}")
+
+        if chunk:
+            logger.info(
+                f"Blocco {chunk_number} pronto: {len(chunk)} record validi "
+                f"su {total_lines} righe lette"
+            )
+            yield chunk
 
     try:
         loader = OracleSiniisLoader()
-        load_result = loader.load_records(records, rata_value)
+        load_result = loader.load_record_chunks(iter_record_chunks(), rata_value)
+
+        logger.info(f"Parsing completato: {valid_records}/{total_lines} record validi")
+
+        if parse_errors_count:
+            logger.warning(f"Record scartati in parsing: {parse_errors_count}")
+
+        if valid_records == 0:
+            logger.warning("Nessun record valido da caricare")
+            raise typer.Exit(code=0)
 
         logger.info("=" * 50)
         logger.info("REPORT CARICAMENTO")
         logger.info(f"  Righe lette:     {total_lines}")
-        logger.info(f"  Record validi:   {len(records)}")
+        logger.info(f"  Record validi:   {valid_records}")
         logger.info(f"  Caricati:        {load_result.loaded}")
-        logger.info(f"  Scartati parse:  {len(parse_errors)}")
+        logger.info(f"  Scartati parse:  {parse_errors_count}")
         logger.info(f"  Scartati DB:     {load_result.skipped}")
         logger.info("=" * 50)
 
@@ -167,6 +192,9 @@ def run(
 
         logger.success(f"Caricamento completato: {load_result.loaded} record")
         return
+
+    except typer.Exit:
+        raise
 
     except RuntimeError as e:
         logger.critical(str(e))
