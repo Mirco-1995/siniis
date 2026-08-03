@@ -21,7 +21,7 @@ from opi_siniis.constants import (
 
 MIN_RECORD_LENGTH = 137
 DB_INSERT_BATCH_SIZE = 10_000
-DB_PROGRESS_STEP = 100_000
+DB_PROGRESS_STEP = 1_000_000
 
 
 @dataclass
@@ -244,7 +244,6 @@ class OracleSiniisLoader:
             raise EnvironmentError("Variabile d'ambiente non definita: ORACLE_HOME")
 
         oracledb.init_oracle_client(lib_dir=os.path.join(oracle_home, "lib"))
-        logger.info("Client Oracle inizializzato in modalita thick")
 
     def _get_connection(self):
         self._init_oracle_client()
