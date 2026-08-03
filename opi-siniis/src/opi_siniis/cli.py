@@ -193,7 +193,7 @@ def run(
                         break
                     line = line.rstrip(b"\r\n")
                 else:
-                    line = input_file.read(MIN_RECORD_LENGTH)
+                    line = input_file.read(137)
                     if not line:
                         break
 

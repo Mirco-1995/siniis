@@ -19,7 +19,7 @@ from opi_siniis.constants import (
     ORACLE_USER,
 )
 
-MIN_RECORD_LENGTH = 137
+MIN_RECORD_LENGTH = 132
 DB_INSERT_BATCH_SIZE = 10_000
 DB_PROGRESS_STEP = 1_000_000
 
@@ -135,7 +135,8 @@ def parse_line(line: bytes, rata_versamento: int, line_number: int) -> ParseResu
         lsu = _decode_field(line, 69, 1) or None
         progr_emissione_str = _decode_field(line, 119, 2)
         num_pg = _decode_field(line, 131, 2) or None
-        tipo_pg = _decode_field(line, 133, 6) or None
+        tipo_pg_length = len(line) - 132
+        tipo_pg = _decode_field(line, 133, tipo_pg_length) or None
 
         cod_cspesa = _parse_int_field(cod_cspesa_str)
         capitolo_bil_stato = _parse_int_field(capitolo_bil_stato_str)
