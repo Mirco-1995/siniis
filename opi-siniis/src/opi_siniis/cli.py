@@ -254,8 +254,6 @@ def run(
         if partition_prepared and loader is not None:
             loader.rebuild_indexes(rata_value)
 
-        logger.info(f"Parsing completato: {valid_records}/{total_lines} record validi")
-
         if parse_errors_count:
             logger.warning(f"Record scartati in parsing: {parse_errors_count}")
 
