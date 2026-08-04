@@ -268,7 +268,6 @@ class OracleSiniisLoader:
                 with conn.cursor() as cur:
                     for index_name in INDEX_NAMES:
                         cur.execute(f"ALTER INDEX {index_name} REBUILD PARTITION {partition_name}")
-                    logger.info(f"REBUILD indici per partizione {partition_name} completato")
         except oracledb.DatabaseError as e:
             error_obj, = e.args
             if error_obj.code == 14400:
