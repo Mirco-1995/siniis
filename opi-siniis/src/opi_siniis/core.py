@@ -162,6 +162,12 @@ def parse_line(line: bytes, rata_versamento: int, line_number: int) -> ParseResu
                 error=f"Errore parsing importo: {e}",
                 line_number=line_number,
             )
+        if importo == 0:
+            return ParseResult(
+                success=False,
+                error="IMPORTO uguale a zero",
+                line_number=line_number,
+            )
 
         errors = []
         if not cod_rit:
@@ -392,7 +398,6 @@ class OracleSiniisLoader:
 
                         for idx_sql in unusable_indices:
                             cur.execute(idx_sql)
-                        logger.info(f"Indici per partizione {partition_name} resi UNUSABLE")
 
                     next_progress = DB_PROGRESS_STEP
 
