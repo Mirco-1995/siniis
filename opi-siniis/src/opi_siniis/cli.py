@@ -216,17 +216,20 @@ def run(
                     if loader is None:
                         loader = OracleSiniisLoader()
 
+                    truncate_partition = not partition_prepared
+                    if truncate_partition:
+                        partition_prepared = True
+
                     partial_result = load_chunk(
                         loader=loader,
                         chunk=chunk,
                         rata=rata_value,
                         chunk_number=chunk_number,
-                        truncate_partition=not partition_prepared,
+                        truncate_partition=truncate_partition,
                         record_number_offset=load_result.total_lines,
                     )
                     merge_load_result(load_result, partial_result)
 
-                    partition_prepared = True
                     chunk = []
                     chunk_number += 1
 
@@ -234,16 +237,22 @@ def run(
             if loader is None:
                 loader = OracleSiniisLoader()
 
+            truncate_partition = not partition_prepared
+            if truncate_partition:
+                partition_prepared = True
+
             partial_result = load_chunk(
                 loader=loader,
                 chunk=chunk,
                 rata=rata_value,
                 chunk_number=chunk_number,
-                truncate_partition=not partition_prepared,
+                truncate_partition=truncate_partition,
                 record_number_offset=load_result.total_lines,
             )
             merge_load_result(load_result, partial_result)
-            partition_prepared = True
+
+        if partition_prepared and loader is not None:
+            loader.rebuild_indexes(rata_value)
 
         logger.info(f"Parsing completato: {valid_records}/{total_lines} record validi")
 
@@ -281,10 +290,20 @@ def run(
         raise
 
     except RuntimeError as e:
+        if partition_prepared and loader is not None:
+            try:
+                loader.rebuild_indexes(rata_value)
+            except Exception as rebuild_error:
+                logger.error(f"Errore durante il REBUILD indici: {rebuild_error}")
         logger.critical(str(e))
         raise typer.Exit(code=1)
 
     except Exception as e:
+        if partition_prepared and loader is not None:
+            try:
+                loader.rebuild_indexes(rata_value)
+            except Exception as rebuild_error:
+                logger.error(f"Errore durante il REBUILD indici: {rebuild_error}")
         logger.critical(f"Errore imprevisto: {e}")
         raise typer.Exit(code=1)
 

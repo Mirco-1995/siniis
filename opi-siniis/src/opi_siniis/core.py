@@ -22,6 +22,12 @@ from opi_siniis.constants import (
 MIN_RECORD_LENGTH = 132
 DB_INSERT_BATCH_SIZE = 10000
 DB_PROGRESS_STEP = 1000000
+INDEX_NAMES = [
+    "IDX_SINIIS_PG_01",
+    "IDX_SINIIS_PG_02",
+    "IDX_SINIIS_PG_03",
+    "IDX_SINIIS_PG_04",
+]
 
 
 @dataclass
@@ -254,6 +260,24 @@ class OracleSiniisLoader:
             dsn=self._dsn,
         )
 
+    def rebuild_indexes(self, rata: int):
+        partition_name = f"P_{rata}"
+
+        try:
+            with self._get_connection() as conn:
+                with conn.cursor() as cur:
+                    for index_name in INDEX_NAMES:
+                        cur.execute(f"ALTER INDEX {index_name} REBUILD PARTITION {partition_name}")
+                    logger.info(f"REBUILD indici per partizione {partition_name} completato")
+        except oracledb.DatabaseError as e:
+            error_obj, = e.args
+            if error_obj.code == 14400:
+                raise RuntimeError(
+                    f"ORA-14400: la partizione per rata {rata} non esiste. "
+                    "La partizione e' di competenza del DBA. Esecuzione interrotta."
+                )
+            raise
+
     def _record_to_params(self, rec: SiniisRecord) -> tuple:
         return (
             rec.rata_versamento,
@@ -323,11 +347,9 @@ class OracleSiniisLoader:
             ALTER TABLE {self._table_name} TRUNCATE PARTITION {partition_name}
         """
 
-        rebuild_indices = [
-            f"ALTER INDEX IDX_SINIIS_PG_01 REBUILD PARTITION {partition_name}",
-            f"ALTER INDEX IDX_SINIIS_PG_02 REBUILD PARTITION {partition_name}",
-            f"ALTER INDEX IDX_SINIIS_PG_03 REBUILD PARTITION {partition_name}",
-            f"ALTER INDEX IDX_SINIIS_PG_04 REBUILD PARTITION {partition_name}",
+        unusable_indices = [
+            f"ALTER INDEX {index_name} MODIFY PARTITION {partition_name} UNUSABLE"
+            for index_name in INDEX_NAMES
         ]
 
         insert_sql = f"""
@@ -363,13 +385,15 @@ class OracleSiniisLoader:
         try:
             with self._get_connection() as conn:
                 with conn.cursor() as cur:
+                    cur.execute("ALTER SESSION SET SKIP_UNUSABLE_INDEXES = TRUE")
+
                     if truncate_partition:
                         cur.execute(truncate_sql)
                         logger.info(f"TRUNCATE PARTITION {partition_name} completata")
 
-                        for idx_sql in rebuild_indices:
+                        for idx_sql in unusable_indices:
                             cur.execute(idx_sql)
-                        logger.info(f"REBUILD indici per partizione {partition_name} completato")
+                        logger.info(f"Indici per partizione {partition_name} resi UNUSABLE")
 
                     next_progress = DB_PROGRESS_STEP
 
