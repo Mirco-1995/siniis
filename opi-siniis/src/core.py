@@ -10,7 +10,7 @@ try:
 except ImportError:
     oracledb = None
 
-from opi_siniis.constants import (
+from constants import (
     COBOL_NUMERIC_MAP,
     ORACLE_DSN,
     ORACLE_HOME,

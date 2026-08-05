@@ -4,7 +4,11 @@ version = "1.0.0"
 description = "Caricamento dati SINIIS_PG nella tabella OPI_SINIIS_PG"
 authors = ["Mirco Mazzolena <mirco.mazzolena2@dxc.com>"]
 readme = "README.md"
-packages = [{include = "opi_siniis", from = "src"}]
+packages = [
+    {include = "cli.py", from = "src"},
+    {include = "constants.py", from = "src"},
+    {include = "core.py", from = "src"},
+]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.14"
@@ -19,7 +23,7 @@ optional = true
 coverage = "*"
 
 [tool.poetry.scripts]
-opi-siniis = 'opi_siniis.__main__:main'
+opi-siniis = 'cli:app'
 
 [build-system]
 requires = ["poetry-core"]

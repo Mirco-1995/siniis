@@ -1,4 +1,4 @@
-from opi_siniis.cli import app
+from cli import app
 
 
 def main():

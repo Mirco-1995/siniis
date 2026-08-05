@@ -8,8 +8,8 @@ from typing import Annotated, Optional
 import typer
 from loguru import logger
 
-from opi_siniis.constants import load_properties
-from opi_siniis.core import (
+from constants import load_properties
+from core import (
     LoadResult,
     MIN_RECORD_LENGTH,
     OracleSiniisLoader,
