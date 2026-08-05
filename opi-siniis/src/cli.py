@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import os
 import sys
 from pathlib import Path
@@ -188,7 +186,7 @@ def run(
     partition_prepared = False
     chunk: list[SiniisRecord] = []
     load_result = LoadResult()
-    loader: OracleSiniisLoader | None = None
+    loader: Optional[OracleSiniisLoader] = None
 
     try:
         logger.info(f"Parsing file: {file_path}")

@@ -1,7 +1,6 @@
-from __future__ import annotations
-
 import os
 from dataclasses import dataclass
+from typing import Optional
 
 from loguru import logger
 
@@ -33,11 +32,11 @@ INDEX_NAMES = [
 @dataclass
 class SiniisRecord:
     rata_versamento: int
-    tipo_rit_raggrup: str | None
-    mod_pag: str | None
+    tipo_rit_raggrup: Optional[str]
+    mod_pag: Optional[str]
     cod_rit: str
-    tipo_zona: str | None
-    num_zona: str | None
+    tipo_zona: Optional[str]
+    num_zona: Optional[str]
     cod_cspesa: int
     capitolo_bil_stato: int
     iscrizione: int
@@ -45,21 +44,21 @@ class SiniisRecord:
     importo: int
     data_trattamento: int
     num_ordine: int
-    provenienza: str | None
-    tipo_ritenuta: str | None
-    sesso: str | None
-    part_time: str | None
-    lsu: str | None
-    progr_emissione: int | None
-    num_pg: str | None
-    tipo_pg: str | None
+    provenienza: Optional[str]
+    tipo_ritenuta: Optional[str]
+    sesso: Optional[str]
+    part_time: Optional[str]
+    lsu: Optional[str]
+    progr_emissione: Optional[int]
+    num_pg: Optional[str]
+    tipo_pg: Optional[str]
 
 
 @dataclass
 class ParseResult:
     success: bool
-    record: SiniisRecord | None = None
-    error: str | None = None
+    record: Optional[SiniisRecord] = None
+    error: Optional[str] = None
     line_number: int = 0
 
 
@@ -68,7 +67,7 @@ class LoadResult:
     total_lines: int = 0
     loaded: int = 0
     skipped: int = 0
-    errors: list[str] = None
+    errors: Optional[list[str]] = None
 
     def __post_init__(self):
         if self.errors is None:
@@ -102,7 +101,7 @@ def _decode_field(raw: bytes, start: int, length: int) -> str:
     return raw[start_idx:end_idx].decode("latin-1", errors="ignore").strip()
 
 
-def _parse_int_field(value: str) -> int | None:
+def _parse_int_field(value: str) -> Optional[int]:
     value = value.strip()
     if not value:
         return None
@@ -228,10 +227,10 @@ class OracleSiniisLoader:
 
     def __init__(
         self,
-        dsn: str | None = None,
-        user: str | None = None,
-        password: str | None = None,
-        owner: str | None = None,
+        dsn: Optional[str] = None,
+        user: Optional[str] = None,
+        password: Optional[str] = None,
+        owner: Optional[str] = None,
     ):
         if oracledb is None:
             raise ImportError("oracledb non installato")

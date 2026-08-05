@@ -1,12 +1,11 @@
-from __future__ import annotations
-
 import os
 from configparser import ConfigParser
 from pathlib import Path
+from typing import Optional
 
 DEFAULT_PROPERTIES_FILE = "opi-siniis.properties"
 
-def load_properties(props_path: str | None = None) -> dict:
+def load_properties(props_path: Optional[str] = None) -> dict:
     path = Path(props_path) if props_path else Path(DEFAULT_PROPERTIES_FILE)
     config = {}
     if path.exists():
