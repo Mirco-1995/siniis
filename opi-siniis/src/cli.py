@@ -8,7 +8,7 @@ from typing import Annotated, Optional
 import typer
 from loguru import logger
 
-from constants import load_properties
+from constants import RATA_VERSAMENTO, SINIIS_PG_PATH, load_properties
 from core import (
     LoadResult,
     MIN_RECORD_LENGTH,
@@ -44,12 +44,14 @@ def validate_rata(rata: int) -> bool:
 def resolve_file_path(file_param: Optional[str], props: dict) -> Path:
     if file_param:
         file_path = Path(file_param)
+    elif SINIIS_PG_PATH:
+        file_path = Path(SINIIS_PG_PATH)
     elif props.get("siniis_pg.path"):
         file_path = Path(props["siniis_pg.path"])
     else:
         raise typer.BadParameter(
             "Nessun path file specificato. "
-            "Usa --file oppure configura siniis_pg.path nel file properties"
+            "Usa --file oppure configura SINIIS_PG_PATH nel file .env"
         )
 
     if not file_path.exists():
@@ -65,6 +67,13 @@ def resolve_file_path(file_param: Optional[str], props: dict) -> Path:
 def resolve_rata(rata_param: Optional[int], props: dict) -> int:
     if rata_param:
         return rata_param
+    if RATA_VERSAMENTO:
+        try:
+            return int(RATA_VERSAMENTO)
+        except ValueError:
+            raise typer.BadParameter(
+                f"RATA_VERSAMENTO nel file .env non valido: {RATA_VERSAMENTO}"
+            )
     if props.get("rata_versamento"):
         try:
             return int(props["rata_versamento"])
@@ -74,7 +83,7 @@ def resolve_rata(rata_param: Optional[int], props: dict) -> int:
             )
     raise typer.BadParameter(
         "Nessuna rata specificata. "
-        "Usa --rata oppure configura rata_versamento nel file properties"
+        "Usa --rata oppure configura RATA_VERSAMENTO nel file .env"
     )
 
 
