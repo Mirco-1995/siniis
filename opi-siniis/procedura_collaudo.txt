@@ -1,0 +1,4 @@
+cd opi-siniis
+source .venv/bin/activate
+source .env
+python opi-siniis.py 2>&1 | tee opi-siniis.log
